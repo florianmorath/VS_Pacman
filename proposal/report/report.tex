@@ -74,7 +74,7 @@
 
 % General information
 
-\title{Project Title\\
+\title{Multiplayer Pacman\\
 \normalsize{Distributed Systems -- Project Proposal}}
 \subtitle{subtitle}
 
@@ -108,9 +108,10 @@
 \maketitle
 
 \begin{abstract}
-This proposal should conclude the initial planning phase. This is where you choose a project, set your goals,
-clarify your ideas, and find the materials you will need. 
-Concisely state 
+
+%--------------------------------------ABSTRACT-------------------------------------
+
+
 \textit{(a)}~System overview
 \textit{(b)}~software and hardware you intend to use in this project,
 \textit{(c)}~expected deliveries of this project.
@@ -118,29 +119,13 @@ Concisely state
 
 \section{Introduction}
 
-Introduction to the problem you are working on, why is it important and
-what makes it challenging to solve, spell out the distributed systems challenges and how you plan to tackle them. 
-State the technical problem you intend to solve. Indicate how it might be useful. This can be brief; it is just
-an introduction to the next section.
+%------------------------------------INTRODUCTION------------------------------------
 
-Use this section as well for background information, particularly if your project is building on
-previous work. If it is doing that, you need to refer to the work, describe it,
-and say how you are extending it. What are the new ideas?
 
-Use references such as books~\cite{hello}, papers~\cite{REST}, or specifications~\cite{RFC2616} whenever available.
-Web-sites for documentation~\cite{devServices}, tutorials, etc., are a special case.
-In a thesis, you would put them as footnotes.
-At this stage, however, you will only have a few ``real references'',
-so we put the Web-sites into the bibliography.
-Cite every source you used throughout the project.
 
 \section{System Overview}
 
-This is the core of the proposal.
-It is where you spell out your technical plan and explain the project design.
-Expected evaluation/demonstration issues would also be addressed in this section.
-Use helpful figures such as~\rfig{example} and~\rfig{system-overview},
-explain the figures in the text where you reference them. 
+%-----------------------------------SYSTEM OVERVIEW----------------------------------
 
 
 \begin{figure}[h]
@@ -154,8 +139,37 @@ explain the figures in the text where you reference them.
 
 
 \section{Requirements}
-Describe system setup, components, external libraries, hardware etc.
 
+%-------------------------------------REQUIREMENTS------------------------------------
+
+\begin{enumerate}
+	\item The game can be played on multiple Android devices.
+	\item The gameplay should work as follows:
+	\begin{enumerate}
+		\item Coins are distributed evenly on the game map (board).
+		\item One player plays as PacMan
+		\item One or multiple other players play as ghosts
+		\item PacMan wins, if he collects all coins on the map
+		\item The ghosts win, if they capture PacMan (simply modeled by collision).
+	\end{enumerate}
+	\item Each player must use one Android device in order to control his figure (PacMan or ghost)
+	\item The map (board) on which the players move should provide the following features:
+	\begin{enumerate}
+		\item PacMan starts on a predefined location (PacMan spawn)
+		\item The ghosts (one ore multiple) start on predefined locations (ghost spawns)
+		\item Player figures can only move up, down, left and right.
+		\item The map is shaped like a maze. ??? [NOT PRECISE ENOUGH]
+		\item The only structuring elements of the map are walls.
+	\end{enumerate}
+	\item The protocol used for Device-to-Device communication will will be implemented atop UDP, TCP or a higher-level protocol [???]
+	\item The app will be optimized for Android version [???] and run on Android version [???] and higher. [???]
+	\item The player who hosts the game will also play as PacMan.
+	\item On the hosting player's device, a server task will be started that clients can connect to. 
+	\item The players that connect to a hosted game play as ghosts.
+	
+\end{enumerate}
+
+The Project 
 
 \begin{figure}[h]
 	\centering
@@ -166,8 +180,8 @@ Describe system setup, components, external libraries, hardware etc.
 \end{figure}
 
 \section{Work Packages}
-Breakdown the work to subtasks to meet the project requirements.
-Define and describe these tasks.
+
+%-----------------------------------WORK PACKAGES----------------------------------
 
 \begin{itemize}
         \item {\bf WP1}:  XYZ  \ldots    
@@ -179,9 +193,9 @@ Define and describe these tasks.
 Stick to a concise, scientific writing style. 
 
 \section{Milestones}
-The milestones section provides a work plan for carrying out the project.
-This is your schedule for getting the project done.
-Clearly state how the work packages will be distributed among the team members. 
+
+%-------------------------------------REFERENCES-----------------------------------
+
 % The following two commands are all you need in the
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.

@@ -1,32 +1,13 @@
 \begin{thebibliography}{1}
 
-\bibitem{estimote}
-{Estimote}.
-\newblock \url{http://estimote.com/}.
-\newblock Accessed on 26 Oct 2015.
+\bibitem{androidGraphics}
+{Android Graphics}.
+\newblock \url{https://developer.android.com/reference/android/graphics/package-summary.html}.
+\newblock Accessed on 16 Nov 2016.
 
-\bibitem{devServices}
-{Services: Sending Notifications to the User}.
-\newblock
-  \url{http://developer.android.com/guide/components/services.html#Notifications}.
-\newblock Accessed on 29 Aug 2013.
-
-\bibitem{hello}
-E.~Burnette.
-\newblock {\em Hello, Android: introducing Google's mobile development
-  platform}.
-\newblock Pragmatic Bookshelf, 3 edition, 2010.
-
-\bibitem{RFC2616}
-R.~Fielding, J.~Gettys, J.~Mogul, H.~Frystyk, L.~Masinter, P.~Leach, and
-  T.~Berners-Lee.
-\newblock {Hypertext Transfer Protocol -- HTTP/1.1}.
-\newblock RFC 2616, 1999.
-
-\bibitem{REST}
-R.~T. Fielding.
-\newblock {\em {Architectural Styles and the Design of Network-based Software
-  Architectures}}.
-\newblock Phd thesis, UC Irvine, 2000.
+\bibitem{AndEngine}
+{AndEngine}.
+\newblock \url{http://www.andengine.org/}.
+\newblock Accessed on 16 Nov 2016.
 
 \end{thebibliography}

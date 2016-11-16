@@ -74,7 +74,7 @@
 
 % General information
 
-\title{Multiplayer Pacman\\
+\title{Multiplayer Pac-Man\\
 \normalsize{Distributed Systems -- Project Proposal}}
 \subtitle{subtitle}
 
@@ -97,9 +97,9 @@
 % e-mail address with \email.
 %
 % 1st. author
-\alignauthor \normalsize{Student One,  Student Two, Student Three}\\
-	\affaddr{\normalsize{ETH ID-1 XX-XXX-XXX, ETH ID-2 XX-XXX-XXX, ETH ID-3 XX-XXX-XXX}}\\
-	\email{\normalsize{one@student.ethz.ch, two@student.ethz.ch, three@student.ethz.ch}}
+\alignauthor \normalsize{Student One,  Student Two, Linus Fessler}\\
+	\affaddr{\normalsize{ETH ID-1 XX-XXX-XXX, ETH ID-2 XX-XXX-XXX, ETH ID-3 14-924-203}}\\
+	\email{\normalsize{one@student.ethz.ch, two@student.ethz.ch, fesslerl@student.ethz.ch}}
 }
 
 
@@ -117,7 +117,7 @@ While graphics have improved significantly over time and new features were added
 
  
 Our goal is therefore to exploit the opportunities of modern mobile devices in order to create a new user experience. 
-This new user experience will consist of the well known PacMan game combined with a distributed multi player approach.
+This new user experience will consist of the well known Pac-Man game combined with a distributed multi player approach.
 The idea will be implemented as an android application allowing the user to create a new instance of the game by starting a server on an android device. 
 Other users can then connect to this server with their own devices.
 
@@ -127,16 +127,13 @@ Other users can then connect to this server with their own devices.
 
 %-----------------------------------SYSTEM OVERVIEW----------------------------------
 
-
 \begin{figure}[h]
 	\centering
-    \includegraphics[width=\columnwidth]{example}
-    \lfig{example}
+    \includegraphics[width=\columnwidth]{overview.png}
+    \lfig{activity-overview}
     \vspace{-5mm} % use negative white space to fix too large gaps
-	\caption{Only include useful figures. Do not simply copy something from a Web.}
+	\caption{Activity Overview}
 \end{figure}
-
-
 
 \section{Requirements}
 
@@ -147,16 +144,16 @@ Other users can then connect to this server with their own devices.
 	\item The gameplay should work as follows:
 	\begin{enumerate}
 		\item Coins are distributed evenly on the game map (board).
-		\item One player plays as PacMan
-		\item One or multiple other players play as ghosts
-		\item PacMan wins, if he collects all coins on the map
-		\item The ghosts win, if they capture PacMan (simply modeled by collision).
+		\item One player plays as Pac-Man.
+		\item One or multiple other players play as ghosts.
+		\item Pac-Man wins, if he collects all coins on the map.
+		\item The ghosts win, if they capture Pac-Man (simply modelled by collision).
 	\end{enumerate}
-	\item Each player must use one Android device in order to control his figure (PacMan or ghost)
+	\item Each player must use one Android device in order to control his figure (Pac-Man or ghost).
 	\item The map (board) on which the players move should provide the following features:
 	\begin{enumerate}
-		\item PacMan starts on a predefined location (PacMan spawn)
-		\item The ghosts (one ore multiple) start on predefined locations (ghost spawns)
+		\item Pac-Man starts on a predefined location (Pac-Man spawn).
+		\item The ghosts (one ore multiple) start on predefined locations (ghost spawns).
 		\item Player figures can only move up, down, left and right.
 		\item The only structuring elements of the map are walls.
 		\item Walls have eiter horizontal or vertical orientation.
@@ -164,11 +161,11 @@ Other users can then connect to this server with their own devices.
 		\item The map has rectangular shape and is limited by walls at its borders (horizontal walls along the left and right border, vertical walls along upper and bottom border).
 		\item Every position at the map that is not occupied by a wall must be reachable for the player figures. 
 	\end{enumerate}
-	\item The protocol used for Device-to-Device communication will will be implemented atop UDP, TCP or a higher-level protocol [???]
+	\item The protocol used for Device-to-Device communication will will be implemented atop UDP, TCP or a higher-level protocol. [???]
 	\item The app will be optimized for Android version [???] and run on Android version [???] and higher. [???]
-	\item The player who hosts the game will also play as PacMan.
-	\item On the hosting player's device, a server task will be started that clients can connect to. 
-	\item The players that connect to a hosted game play as ghosts.
+	\item The host will play as Pac-Man.
+	\item Clients will play as ghosts.
+	\item On the hosting player's device, a service will be started to run the server which the clients can connect to.
 	\item The game engine is either implemented from scratch using the android.graphics library [1] or the ANDEngine is used, a free Android 2D OpenGL game engine [2].
 	
 \end{enumerate}
@@ -178,17 +175,41 @@ Other users can then connect to this server with their own devices.
 %-----------------------------------WORK PACKAGES----------------------------------
 
 \begin{itemize}
-        \item {\bf WP1}: Define appropriate model for game situation (state) and methods to change the state.
-        \item {\bf WP2}: Implement a map generator.         
-        \item {\bf WP3}: Design graphical representation for PacMan player figure.
-        \item {\bf WP4}: Design graphical representation for Ghost player figure.
-        \item {\bf WP5}: Design graphical representation for map elements (coins, walls, unoccupied positions).
-        \item {\bf WP6}: Implement Game activity that connects model and graphical representation. It should also allow the user to control it's figure.
-		\item {\bf WP7}: Define a communication protocol to synchronize the game's state accross devices. Choose appropriate transport protocol. 
-        \item {\bf WP8}: Implement the communication protocol - part 1: Server.
-        \item {\bf WP9}: Implement the communication protocol - part 2: Client.
-        \item {\bf WP10}: Design and implement start menu that allows the players to connect to the game.
-        \item {\bf WP11}: Combine Game activity with the communication protocol.
+	\item {\bf WP1}: Define appropriate model for game situation (state) and methods to change the state.
+	\item {\bf WP2}: Implement a map generator.         
+	\item {\bf WP3}: Design graphical representation for Pac-Man player figure.
+	\item {\bf WP4}: Design graphical representation for ghost player figure.
+	\item {\bf WP5}: Design graphical representation for map elements (coins, walls, unoccupied positions).
+	\item {\bf WP6}: Implement Game activity that connects model and graphical representation. It should also allow the user to control its figure.
+	\item {\bf WP7}: Define a communication protocol to synchronize the game's state across devices. Choose appropriate transport protocol.
+	\item {\bf WP8}: Implement the communication protocol - part 1: Server.
+	\item {\bf WP9}: Implement the communication protocol - part 2: Client.
+	\item {\bf WP10}: Combine Game activity with the communication protocol.
+	\item {\bf WP11}: MainActivity, LobbyActivity, SettingsActivity, ScoreActivity design.
+	\item {\bf WP12}: MainActivity functionality:
+		\begin{enumerate}
+			\item Host button starts LobbyActivity with boolean intent extra "is host" set to true to then enable Start button and disable "Waiting for host to start game" text in LobbyActivity.
+			\item Join button starts LobbyActivity with boolean intent extra "is host" set to false to then disable Start button and enable "Waiting for host to start game" text in LobbyActivity.
+			\item Settings button starts SettingsActivity.
+		\end{enumerate}
+	\item {\bf WP13}: LobbyActivity functionality:
+		\begin{enumerate}
+			\item ListView to list all connected player (might needs to be scrollable depending on how many player we allow in one game).
+			\item Host can press Start button to start game for all players.
+		\end{enumerate}
+	\item {\bf WP14}: SettingsActivity functionality:
+		\begin{enumerate}
+			\item Name EditText: default name is "Anonymous" or device name.
+			\item Host IP Address TextView: Shows the device's LAN IP Address.
+			\item Host Port Address EditText: Allows to change the server's port.
+			\item Join IP Address EditText: Allows to change the IP Address to connect to when joining a game.
+			\item Join Port Address EditText: Allows to change the port at which to connect when joining a game.
+		\end{enumerate}
+	\item {\bf WP15}: ScoreActivity functionality:
+		\begin{enumerate}
+			\item ListView (possibly scrollable) to show Highscores list of the host (Pac-Man) which is saved locally on the host's device. When the game ends, every player will land in the ScoreActivity, receive the list from the host and display it.
+			\item The Back button returns to the MainActivity.
+		\end{enumerate}
 \end{itemize}
 
 \section{Milestones}
@@ -200,10 +221,17 @@ Work package distribution:
         \item {\bf Stefan Oanceas}:
 		\item {\bf Johannes Beck}:
 		\item {\bf Linus Fessler}:
-		\item {\bf Markus Han}:
+		\item {\bf Markus Hauptner}:
 		\item {\bf Tiziano Zaramoni}:
 		\item {\bf Florian Morath}:
 \end{itemize}
+
+
+
+\section{Additional Authors}
+
+%-------------------------------Additional Authors---------------------------------
+
 
 
 %-------------------------------------REFERENCES-----------------------------------

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.10.4)  16 NOV 2016 19:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.10.4)  16 NOV 2016 19:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -387,18 +387,18 @@ Overfull \hbox (7.66463pt too wide) in paragraph at lines 114--117
 <overview.png, id=1, 602.25pt x 771.63281pt>
 File: overview.png Graphic file (type png)
  <use overview.png>
-Package pdftex.def Info: overview.png used on input line 140.
+Package pdftex.def Info: overview.png used on input line 150.
 (pdftex.def)             Requested size: 240.0pt x 307.50555pt.
  [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
  <./overview.png>]
-Overfull \hbox (4.15639pt too wide) in paragraph at lines 177--179
+Overfull \hbox (4.15639pt too wide) in paragraph at lines 187--189
 \T1/aer/m/n/9 us-ing the an-droid.graphics li-brary [1] or the AN-DEngine
  []
 
 
-Overfull \hbox (1.0067pt too wide) in paragraph at lines 191--192
+Overfull \hbox (1.0067pt too wide) in paragraph at lines 201--202
 []\T1/aer/bx/n/9 WP4\T1/aer/m/n/9 : De-sign graph-i-cal rep-re-sen-ta-tion for 
 ghost player
  []
@@ -411,14 +411,14 @@ Here is how much of TeX's memory you used:
  8246 multiletter control sequences out of 15000+600000
  42524 words of font info for 59 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 41i,11n,40p,553b,345s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,11n,40p,268b,345s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvi
 ps/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
 bx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb>
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/s
 hare/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive
 /texmf-dist/fonts/type1/urw/times/utmb8a.pfb>
-Output written on report.pdf (2 pages, 167972 bytes).
+Output written on report.pdf (2 pages, 168022 bytes).
 PDF statistics:
  35 PDF objects out of 1000 (max. 8388607)
  23 compressed objects within 1 object stream

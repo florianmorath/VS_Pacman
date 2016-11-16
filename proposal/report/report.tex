@@ -127,13 +127,23 @@ Other users can then connect to this server with their own devices.
 
 %-----------------------------------SYSTEM OVERVIEW----------------------------------
 
-Figure 1 gives an overview of the Pacman app. The starting activity is the Main activity. From there the user can either choose to host a game or to join a game. In the fromer case, the user needs to specify in the Settings activity to which port should the other players connect. In the latter case, the user needs to configure in Settings activity the IP address of the host and the port number of the host. Furthermore, before starting joining (or hosting) a game, the user should specify an (unique) name.
+Figure 1 gives an overview of the Pacman app. The starting activity is the Main activity. 
+From there the user can either choose to host a game or to join a game. 
+In the fromer case, the user needs to specify in the Settings activity to which port should the other players connect. 
+In the latter case, the user needs to configure in the Settings activity the IP address of the host and the port number of the host. 
+Furthermore, before joining (or hosting) a game, the user should specify an (unique) name.
 
 
-After choosing to join a game, the app will switch from the Main activity to the Lobby activity. From there on, the user/app needs to wait for the host to start the game. Of course, if the user has not configured his/her settings appropiately (for instance, invalid port number for the host), then the app will notify the user. Conversely, if the user is the host, the app will make sure he a (valid) port number. Moreover, it should check that all names are unique. If there is a name clash, the app can and should kick those players out. Once the host is ready, he/she can start the game.
+After choosing to join a game, the app will switch from the Main activity to the Lobby activity.
+From there on, the user/app needs to wait for the host to start the game. Of course, if the user has not configured his/her settings appropiately (for instance, invalid port number for the host), then the app will notify the user. 
+Conversely, if the user is the host, the app will make sure he has a (valid) port number. 
+Moreover, it should check that all names are unique. If there is a name clash, the app can and should kick those players out. Once the host is ready, he/she can start the game.
 
 
-Once the game started, a Score activity keeps track of the current performance of the players. If Pacman (i.e. the host) manages to take all the points that are positioned on the map, he wins the round and gets one point. Otherwise, of a ghost manages to capture Pacman, then the ghost gets one point. (??? is this the way we should keep track of the score? any other proposals?)
+Once the game started, a Score activity keeps track of the current performance of the players. 
+If Pacman (i.e. the host) manages to take all the points that are positioned on the map, he wins the round and gets one point. 
+Otherwise, if a ghost manages to capture Pacman, then the ghost gets one point. 
+[??? is this the way we should keep track of the score? any other proposals?]
 
 \begin{figure} [ht!]
 	\centering

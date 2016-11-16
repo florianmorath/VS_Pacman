@@ -121,6 +121,16 @@
 
 %------------------------------------INTRODUCTION------------------------------------
 
+Since 1980, the game Pac-Man has fascinated players around the world. 
+Starting as an arcade game, it was adapted for many platforms while technology was improving and is still played today on mobile devices.
+While graphics have improved significantly over time and new features were added to the original idea of the game, there is still a major drawback to most of its versions as the game only provides single player user experience.
+
+ 
+Our goal is therefore to exploit the opportunities of modern mobile devices in order to create a new user experience. 
+This new user experience will consist of the well known PacMan game combined with a distributed multi player approach.
+The idea will be implemented as an android application allowing the user to create a new instance of the game by starting a server on an android device. 
+Other users can then connect to this server with their own devices.
+
 
 
 \section{System Overview}
@@ -143,7 +153,7 @@
 %-------------------------------------REQUIREMENTS------------------------------------
 
 \begin{enumerate}
-	\item The game can be played on multiple Android devices.
+	\item The game can be played on multiple Android devices (at least two).
 	\item The gameplay should work as follows:
 	\begin{enumerate}
 		\item Coins are distributed evenly on the game map (board).
@@ -158,8 +168,11 @@
 		\item PacMan starts on a predefined location (PacMan spawn)
 		\item The ghosts (one ore multiple) start on predefined locations (ghost spawns)
 		\item Player figures can only move up, down, left and right.
-		\item The map is shaped like a maze. ??? [NOT PRECISE ENOUGH]
 		\item The only structuring elements of the map are walls.
+		\item Walls have eiter horizontal or vertical orientation.
+		\item Player figures can not move through walls.
+		\item The map has rectangular shape and is limited by walls at its borders (horizontal walls along the left and right border, vertical walls along upper and bottom border).
+		\item Every position at the map that is not occupied by a wall must be reachable for the player figures. 
 	\end{enumerate}
 	\item The protocol used for Device-to-Device communication will will be implemented atop UDP, TCP or a higher-level protocol [???]
 	\item The app will be optimized for Android version [???] and run on Android version [???] and higher. [???]
@@ -184,10 +197,17 @@ The Project
 %-----------------------------------WORK PACKAGES----------------------------------
 
 \begin{itemize}
-        \item {\bf WP1}:  XYZ  \ldots    
-        \item {\bf WP2}: Set and Configuring Backend Serve  \ldots    
-        \item {\bf WP3}: Integration  \ldots 
-         \item {\bf WPx}:  \ldots 
+        \item {\bf WP1}: Define appropriate model for game situation (state) and methods to change the state.
+        \item {\bf WP2}: Implement a map generator.         
+        \item {\bf WP3}: Design graphical representation for PacMan player figure.
+        \item {\bf WP4}: Design graphical representation for Ghost player figure.
+        \item {\bf WP5}: Design graphical representation for map elements (coins, walls, unoccupied positions).
+        \item {\bf WP6}: Implement Game activity that connects model and graphical representation. It should also allow the user to control it's figure.
+		\item {\bf WP7}: Define a communication protocol to synchronize the game's state accross devices. Choose appropriate transport protocol. 
+        \item {\bf WP8}: Implement the communication protocol - part 1: Server.
+        \item {\bf WP9}: Implement the communication protocol - part 2: Client.
+        \item {\bf WP10}: Design and implement start menu that allows the players to connect to the game.
+        \item {\bf WP11}: Combine Game activity with the communication protocol.
 \end{itemize}
  
 Stick to a concise, scientific writing style. 

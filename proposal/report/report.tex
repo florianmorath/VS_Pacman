@@ -126,13 +126,39 @@ Other users can then connect to this server with their own devices.
 \section{System Overview}
 
 %-----------------------------------SYSTEM OVERVIEW----------------------------------
+Figure 1 gives an overview of the Pacman app Activities.
+The app starts in the Main activity. 
+Here, the user can choose to either edit the game settings, host or join a game by pressing corresponding buttons.
 
-Figure 1 gives an overview of the Pacman app. The starting activity is the Main activity. 
+If the user presses the "Settings" button, the app will switch to the Settings Activity, where the devices local IP address is listed and the following properties can be changed:
+\begin{enumerate}
+	\item The username that will be used in the game.
+	\item The port on which the local server would listen to.
+	\item The IP address and port on which the app would try to connect to a server.
+\end{enumerate}
+
+If the user chooses the "Host" button, the app will switch to the Lobby Activity (Host).
+Here, the user can await new clients and see which ones are currently connected (identified by usernames).
+Furthermore, the user can decide to start the game by pressing a "Start" button.
+This will launch the Game Activity and start the actual game.
+
+If the user chooses the "Join" button, the app will switch to the Lobby Activity (Client).
+Here, the user can see the host's username and which clients are currently connected (identified by username).
+In contrast to the host's view, the client can not see a "Start" button, but instead has to wait for the host to start the game.
+
+Independent from the device's role as host or client, the app will automatically switch to the Score Activity after the game has ended.
+This Activity displays each users score (determined by the gameplay performance).
+The only following action is to return to the Main Activity by pressing a button. 
+ 
+
+---------------------------------------------------------------------------
+
+Figure 1 gives an overview of the Pacman app.
+The starting activity is the Main activity. 
 From there the user can either choose to host a game or to join a game. 
-In the fromer case, the user needs to specify in the Settings activity to which port should the other players connect. 
+In the former case, the user needs to specify in the Settings activity to which port should the other players connect. 
 In the latter case, the user needs to configure in the Settings activity the IP address of the host and the port number of the host. 
 Furthermore, before joining (or hosting) a game, the user should specify an (unique) name.
-
 
 After choosing to join a game, the app will switch from the Main activity to the Lobby activity.
 From there on, the user/app needs to wait for the host to start the game. Of course, if the user has not configured his/her settings appropiately (for instance, invalid port number for the host), then the app will notify the user. 

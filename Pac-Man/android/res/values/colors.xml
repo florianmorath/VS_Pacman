@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="primary" type="color">#ffd700</item>
+    <item name="primary_dark" type="color">#dcb900</item>
+    <item name="accent" type="color">#00c4ff</item>
+    <item name="text_primary" type="color">#ffffff</item>
+    <item name="text_primary_dark" type="color">#333333</item>
+    <item name="window_background" type="color">#333333</item>
+    <item name="navigation_bar" type="color">#333333</item>
+
+</resources>

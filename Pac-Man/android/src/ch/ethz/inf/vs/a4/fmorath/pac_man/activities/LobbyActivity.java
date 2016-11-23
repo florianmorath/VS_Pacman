@@ -32,8 +32,10 @@ public class LobbyActivity extends Activity {
         listView.setAdapter(arrayAdapter);
 
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
-        if (!isHost)
-            findViewById(R.id.button_start).setVisibility(View.INVISIBLE);
+        if (isHost)
+            findViewById(R.id.text_waiting_for_host).setVisibility(View.GONE);
+        else
+            findViewById(R.id.button_start).setVisibility(View.GONE);
     }
 
     public void onStartButtonClick(View view) {

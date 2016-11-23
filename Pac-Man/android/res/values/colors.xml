@@ -2,7 +2,7 @@
 <resources>
 
     <item name="primary" type="color">#ffd700</item>
-    <item name="primary_dark" type="color">#dcb900</item>
+    <item name="primary_dark" type="color">#c6a600</item>
     <item name="accent" type="color">#00c4ff</item>
     <item name="text_primary" type="color">#ffffff</item>
     <item name="text_primary_dark" type="color">#333333</item>

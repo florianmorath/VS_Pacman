@@ -9,6 +9,7 @@
     <string name="button_start">Start</string>
 
     <string name="text_connected_players">Connected players</string>
+    <string name="text_waiting_for_host">Waiting for host to start game …</string>
 
     <string name="summary_host_ip_address">Your IP Address: %1$s</string>
 </resources>

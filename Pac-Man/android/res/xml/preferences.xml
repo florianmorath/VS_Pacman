@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="username"
+        android:title="Username"
+        android:summary="Change your username"
+        android:defaultValue="Anonymous" />
+
+    <PreferenceCategory
+        android:title="Host">
+
+        <EditTextPreference
+            android:key="host_ip_address"
+            android:title="IP Address"
+            android:summary="[Display IP Address here]"
+            android:selectable="false" />
+
+        <EditTextPreference
+            android:key="host_port"
+            android:title="Port"
+            android:summary="Change the port at which your server will be listening"
+            android:defaultValue="5555"
+            android:inputType="number"
+            android:maxLength="5" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Join">
+
+        <EditTextPreference
+            android:key="join_ip_address"
+            android:title="IP Address"
+            android:summary="Change the IP Address at which to search for a game"
+            android:defaultValue="localhost" />
+
+        <EditTextPreference
+            android:key="join_port"
+            android:title="Port"
+            android:summary="Change the port at which to connect"
+            android:defaultValue="5555"
+            android:inputType="number"
+            android:maxLength="5" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

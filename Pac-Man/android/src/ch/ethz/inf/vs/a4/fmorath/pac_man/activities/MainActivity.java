@@ -18,15 +18,10 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        /*ImageView imageView = (ImageView) findViewById(R.id.image_view);
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.title1);
-        bitmap = Bitmap.createScaledBitmap(bitmap, 50*bitmap.getWidth(), 50*bitmap.getHeight(), false);
-        imageView.setImageBitmap(bitmap);*/
     }
 
     public void onHostButtonClick(View view) {
-        Intent intent = new Intent(this, GameActivity.class); //Todo: change back to LobbyActivity.class...
+        Intent intent = new Intent(this, LobbyActivity.class);
         intent.putExtra(IS_HOST, true);
         startActivity(intent);
     }

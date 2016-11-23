@@ -27,4 +27,13 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
+    <style name="PreferenceTheme" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:buttonStyle">@style/PreferenceButton</item>
+    </style>
+
+    <style name="PreferenceButton" parent="android:Widget.Material.Button">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
 </resources>

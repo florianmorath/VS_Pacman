@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
     }
 
     public void onHostButtonClick(View view) {
-        Intent intent = new Intent(this, LobbyActivity.class);
+        Intent intent = new Intent(this, GameActivity.class); //Todo: change back to LobbyActivity.class...
         intent.putExtra(IS_HOST, true);
         startActivity(intent);
     }

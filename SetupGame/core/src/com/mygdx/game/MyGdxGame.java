@@ -64,11 +64,11 @@ public class MyGdxGame extends ApplicationAdapter{
 
 		// Initialize PacMan Actor
 		pacmanActor = new PlayerActor();
-		//pacmanActor.setScale(10f);
+		pacmanActor.setScale(4f);
 		pacmanActor.setPosition(camera.viewportWidth/2 - (pacmanActor.getWidth()/2)*pacmanActor.getScaleX(),
 				camera.viewportHeight/2 - (pacmanActor.getHeight()/2)*pacmanActor.getScaleY());
 
-		//stage.addActor(pacmanActor);
+		stage.addActor(pacmanActor);
 
 		Gdx.input.setInputProcessor(stage);
 	}

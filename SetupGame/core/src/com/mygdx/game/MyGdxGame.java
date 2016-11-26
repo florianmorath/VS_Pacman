@@ -45,7 +45,7 @@ public class MyGdxGame extends ApplicationAdapter{
 
 		// Initialize map and mapRenderer
 		map = new TmxMapLoader().load("pacmanMap.tmx");
-		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(map, 4.82f);
 
 		worldWidth  = map.getProperties().get("width",  Integer.class);
 		worldHeight = map.getProperties().get("height", Integer.class);

@@ -8,11 +8,18 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
@@ -36,6 +43,15 @@ public class MyGdxGame extends ApplicationAdapter{
 
 	OrthographicCamera camera;
 	Viewport viewport;
+
+	private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
+		@Override
+		protected Rectangle newObject () {
+			return new Rectangle();
+		}
+	};
+
+	private Array<Rectangle> tiles = new Array<Rectangle>();
 
 	@Override
 	public void create () {
@@ -86,6 +102,9 @@ public class MyGdxGame extends ApplicationAdapter{
 		stage.getBatch().setProjectionMatrix(camera.combined);
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
+
+		WallCollisionDetection();
+
 	}
 	
 	@Override
@@ -98,6 +117,48 @@ public class MyGdxGame extends ApplicationAdapter{
 	public void resize(int width, int height) {
 		viewport.update(width, height);
 		camera.position.set(camera.viewportWidth/2, camera.viewportHeight/2, 0);
+	}
+
+
+
+	private void WallCollisionDetection() {
+
+		getTiles(pacmanActor.getX(), pacmanActor.getY(), pacmanActor.getX()+pacmanActor.getWidth(), pacmanActor.getY()+pacmanActor.getHeight(), tiles);
+
+		for(Rectangle tile: tiles) {
+			Gdx.app.log("tile", "true");
+
+			if (Intersector.overlaps(tile, new Rectangle(pacmanActor.getX(),pacmanActor.getY(),pacmanActor.getWidth(),pacmanActor.getHeight()))) {
+				// collision happened
+				Gdx.app.log("collision", "true");
+
+			}
+		}
+
+	}
+
+	private void getTiles(float startX, float startY, float endX, float endY, Array<Rectangle> tiles) {
+		
+		int startXX = Math.round(startX);
+		int startYY = Math.round(startY);
+		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
+
+		rectPool.freeAll(tiles);
+		tiles.clear();
+		for(int y =  startYY; y <= endY; y++) {
+			for(int x = startXX; x <= endX; x++) {
+				TiledMapTileLayer.Cell cell = layer.getCell(x, y);
+
+				if(cell != null) {
+					Gdx.app.log("cellFound", "true");
+
+					Rectangle rect = rectPool.obtain();
+					rect.set(x, y, 1, 1);
+					tiles.add(rect);
+
+				}
+			}
+		}
 	}
 
 

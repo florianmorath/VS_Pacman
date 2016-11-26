@@ -24,7 +24,7 @@ public class PlayerActor extends Actor{
     private Direction currentDirection;
     private float elapsedTime;
 
-    private float SPEED = 4.5f; // 11 = tiles per second in original pacman. 2 tiles = 2 world units
+    private float SPEED = 0.5f; // 11 = tiles per second in original pacman. 2 tiles = 2 world units
 
 
 

@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -24,7 +26,7 @@ public class PlayerActor extends Actor{
     private Direction currentDirection;
     private float elapsedTime;
 
-    private float SPEED = 0.5f; // 11 = tiles per second in original pacman. 2 tiles = 2 world units
+    private float SPEED = 4.5f; // 11 = tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
 
 
@@ -71,8 +73,13 @@ public class PlayerActor extends Actor{
         this.setPosition(0, 0);
     }
 
+
+    // TODO: Implement map border and teleport through border correcty
     @Override
     public void act(float delta) {
+
+//        System.out.println("## Loc:    X = " + this.getX() + "   Y = " + this.getY());
+
 
         // Move player coordinates according to direction and switch animation if needed
 
@@ -100,8 +107,8 @@ public class PlayerActor extends Actor{
 
     }
 
-    // This is a gross hack, but I didnt find another easy and compact way
-    // TODO: Maybe remove this hack and implement it more correctly
+    // This is a hack, but I didnt find another easy and compact way yet
+    // TODO: Maybe remove this hack and implement it more correctly (e.g. in a personalized Stage class)
     @Override
     public Actor hit(float x, float y, boolean touchable) {
         return this;
@@ -119,12 +126,20 @@ public class PlayerActor extends Actor{
                 this.getRotation());
     }
 
+
+    // Returns the rectangle in world space (!)
+    public Rectangle getRectangle(){
+//        return new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+        Vector3 worldSpacePosition3 = this.getStage().getCamera().unproject(new Vector3(this.getX(), this.getY(), 0));
+        return new Rectangle(worldSpacePosition3.x, worldSpacePosition3.y, this.getWidth(), this.getHeight());
+    }
+
     public class PlayerActorGestureListener extends ActorGestureListener{
 
         @Override
         public void fling(InputEvent event, float velocityX, float velocityY, int button) {
 
-            System.out.println("### Fling event: x:" + velocityX + " y:" + velocityY);
+            //System.out.println("### Fling event: x:" + velocityX + " y:" + velocityY);
 
 
             if(Math.abs(velocityX) >= Math.abs(velocityY)){
@@ -132,7 +147,6 @@ public class PlayerActor extends Actor{
                 if (velocityX >= 0){
                     // Right fling
                     currentDirection = Direction.RIGHT;
-                    System.out.print("### Right fling");
                 }else{
                     // Left fling
                     currentDirection = Direction.LEFT;

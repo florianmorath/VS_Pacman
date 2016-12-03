@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.io.IOException;
@@ -83,20 +84,18 @@ public class Game extends ApplicationAdapter {
 		worldWidth  = map.getProperties().get("width",  Integer.class);
 		worldHeight = map.getProperties().get("height", Integer.class);
 
-		scale = (screenWidth / (float)worldWidth) / 4;
-
-		tiledMapRenderer = new OrthogonalTiledMapRenderer(map, scale);//, 4.82f);
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
 		collisionRectangles = getCollisionRectangles(map);
 
 		// Initialize camera and viewport
 		camera = new OrthographicCamera();
-		viewport = new FitViewport(screenWidth, screenHeight, camera);
+		viewport = new FitViewport(4 * worldWidth, 4 * worldHeight, camera);
 
 		// Initialize stage
 		stage = new Stage(viewport);
 
 		// Initialize PacMan Actor
-		pacmanActor = new PlayerActor(scale);
+		pacmanActor = new PlayerActor();
 //		pacmanActor.setPosition(camera.viewportWidth/2 - (pacmanActor.getWidth()/2)*pacmanActor.getScaleX(),
 //				camera.viewportHeight/2 - (pacmanActor.getHeight()/2)*pacmanActor.getScaleY());
 
@@ -109,6 +108,8 @@ public class Game extends ApplicationAdapter {
 	public void render () {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		Gdx.gl.glViewport(0, 0, screenWidth, screenHeight);
 
 		camera.update();
 

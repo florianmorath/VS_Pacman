@@ -28,9 +28,7 @@ public class PlayerActor extends Actor{
 
     private float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
-    public PlayerActor(float scale){
-        setScale(scale);
-
+    public PlayerActor(){
         // Set current direction to an initial value
         currentDirection = MovementDirection.NONE;
         elapsedTime = 0f;

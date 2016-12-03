@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 
 public class GameActivity extends AndroidApplication {

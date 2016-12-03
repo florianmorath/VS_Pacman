@@ -11,7 +11,8 @@ public enum MovementDirection {
     UP(0),
     RIGHT(1),
     DOWN(2),
-    LEFT(3);
+    LEFT(3),
+    NONE(4);
 
     private int val;
     MovementDirection(int val){
@@ -36,8 +37,9 @@ public enum MovementDirection {
             case 0: return UP;
             case 1: return RIGHT;
             case 2: return DOWN;
+            case 3: return LEFT;
         }
-        return LEFT;
+        return NONE;
     }
 
 }

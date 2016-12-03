@@ -3,8 +3,23 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.io.IOException;
 
@@ -13,43 +28,206 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.ExampleHandler;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
 
+
 public class Game extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture img;
-	
+
+	int screenWidth;
+	int screenHeight;
+	float scale;
+	Stage stage;
+	PlayerActor pacmanActor;
+
+	TiledMap map;
+	TiledMapRenderer tiledMapRenderer;
+	Array<Rectangle> collisionRectangles;
+
+	int worldWidth;
+	int worldHeight;
+
+	OrthographicCamera camera;
+	Viewport viewport;
+
+	int backgroundLayerId = 0;
+	int objectLayerId = 2;
+
+	private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
+		@Override
+		protected Rectangle newObject () {
+			return new Rectangle();
+		}
+	};
+
+	private Array<Rectangle> tiles = new Array<Rectangle>();
+
 	@Override
 	public void create () {
-		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
-		try {
+		/*try {
 			testCommunication();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
+		}*/
+
+		screenWidth = Gdx.graphics.getWidth();
+		screenHeight = Gdx.graphics.getHeight();
+		float aspectRatio = (float)screenHeight/(float)screenWidth;
+
+		// Initialize map, mapRenderer and the collision layer
+		map = new TmxMapLoader().load("pacmanMap.tmx");
+		worldWidth  = map.getProperties().get("width",  Integer.class);
+		worldHeight = map.getProperties().get("height", Integer.class);
+
+		scale = ((float)screenWidth/(float)worldWidth)/4f;
+
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(map, scale);//, 4.82f);
+		collisionRectangles = getCollisionRectangles(map);
+
+		// Initialize Camera and viewport
+		camera = new OrthographicCamera();
+		viewport = new FitViewport(worldWidth, worldHeight, camera);
+
+		// Initialize stage
+		stage = new Stage(viewport);//viewport);
+
+		// Initialize PacMan Actor
+		pacmanActor = new PlayerActor();
+		pacmanActor.setScale(scale);
+//		pacmanActor.setPosition(camera.viewportWidth/2 - (pacmanActor.getWidth()/2)*pacmanActor.getScaleX(),
+//				camera.viewportHeight/2 - (pacmanActor.getHeight()/2)*pacmanActor.getScaleY());
+
+		stage.addActor(pacmanActor);
+
+		Gdx.input.setInputProcessor(stage);
 	}
 
 	@Override
 	public void render () {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.begin();
-		batch.draw(img, 0, 0);
-		batch.end();
+
+		camera.update();
+
+		tiledMapRenderer.setView(camera);
+		tiledMapRenderer.render();
+
+//		stage.getBatch().setProjectionMatrix(camera.combined);
+		stage.act(Gdx.graphics.getDeltaTime());
+		stage.draw();
+
+		//detectMapCollision();
+
+//		WallCollisionDetection();
+
 	}
-	
+
 	@Override
 	public void dispose () {
-		batch.dispose();
-		img.dispose();
+		stage.dispose();
+		map.dispose();
 	}
+
+	@Override
+	public void resize(int width, int height) {
+
+		camera.viewportWidth  = width;
+		camera.viewportHeight = height;
+		camera.position.set(width/2f, height/2f, 0);
+		camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
+
+	}
+
+	private void detectMapCollision(){
+
+		for(Rectangle rect : collisionRectangles){
+
+//			System.out.println("## Rect info: current Rectangle: x:" + rect.getX() + " y: " + rect.getY() + " w:" + rect.getWidth() + " h:" + rect.getHeight() +
+//					" Pacman Rectangle: x:" + pacmanActor.getRectangle().getX() + " y:" + pacmanActor.getRectangle().getY() +
+//					" w: " + pacmanActor.getRectangle().getWidth() + " h:" + pacmanActor.getRectangle().getHeight());
+
+
+			if(Intersector.overlaps(rect, pacmanActor.getRectangle())){
+				System.out.println("### Collision");
+			}
+		}
+	}
+
+	// Function to extract rectangles from the object layer
+	private Array<Rectangle> getCollisionRectangles(TiledMap thisMap){
+
+		// 0.) Initialize vectors and result
+		Array<Rectangle> result = new Array<Rectangle>();
+		Vector2 worldPos2;
+		Vector3 worldPos3;
+
+		// 1.) Get an array of RectangleMapObjects
+		MapLayer collisionLayer = thisMap.getLayers().get(objectLayerId);
+		MapObjects mapObjects = collisionLayer.getObjects();
+		Array<RectangleMapObject> rectangleMapObjects = (Array<RectangleMapObject>)mapObjects.getByType(RectangleMapObject.class);
+
+		// 2.) extract each rectangle
+		for(RectangleMapObject currentRect: rectangleMapObjects){
+
+//			worldPos2 = currentRect.getRectangle().getPosition();
+//			worldPos3 = new Vector3(worldPos2.x, worldPos2.y, 0);
+//			camera.project(worldPos3);
+//			result.add(new Rectangle(worldPos3.x, worldPos3.y, currentRect.getRectangle().getWidth(), currentRect.getRectangle().getHeight()));
+			result.add(currentRect.getRectangle());
+		}
+
+		return result;
+	}
+
+
+
+//	private void WallCollisionDetection() {
+//
+//		getTiles(pacmanActor.getX(), pacmanActor.getY(), pacmanActor.getX()+pacmanActor.getWidth(), pacmanActor.getY()+pacmanActor.getHeight(), tiles);
+//
+//		for(Rectangle tile: tiles) {
+//			Gdx.app.log("tile", "true");
+//
+//			if (Intersector.overlaps(tile, new Rectangle(pacmanActor.getX(),pacmanActor.getY(),pacmanActor.getWidth(),pacmanActor.getHeight()))) {
+//				// collision happened
+//				Gdx.app.log("collision", "true");
+//
+//				// Isnt it easier to use System.out?
+//				System.out.println("### Collision detected");
+//
+//			}
+//		}
+
+//	}
+
+//	private void getTiles(float startX, float startY, float endX, float endY, Array<Rectangle> tiles) {
+//
+//		int startXX = Math.round(startX);
+//		int startYY = Math.round(startY);
+//		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
+//
+//		rectPool.freeAll(tiles);
+//		tiles.clear();
+//		for(int y =  startYY; y <= endY; y++) {
+//			for(int x = startXX; x <= endX; x++) {
+//				TiledMapTileLayer.Cell cell = layer.getCell(x, y);
+//
+//				if(cell != null) {
+//					Gdx.app.log("cellFound", "true");
+//
+//					Rectangle rect = rectPool.obtain();
+//					rect.set(x, y, 1, 1);
+//					tiles.add(rect);
+//
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * TODO: Remove this method. Only for Demonstration purposes how to use the communication protocol.
 	 * @throws IOException
 	 * @throws InterruptedException
-     */
+	 */
 	public void testCommunication() throws IOException, InterruptedException {
 		ExampleHandler serverHandler = new ExampleHandler("Server");
 		ExampleHandler client1Handler = new ExampleHandler("Client1");

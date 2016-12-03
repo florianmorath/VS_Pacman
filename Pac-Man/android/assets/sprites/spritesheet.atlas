@@ -1,7 +1,7 @@
 spritesheet.png
 size: 80, 16
 format: RGBA8888
-filter: Linear,Linear
+filter: Nearest,Nearest
 repeat: none
 pacman_base
   rotate: false

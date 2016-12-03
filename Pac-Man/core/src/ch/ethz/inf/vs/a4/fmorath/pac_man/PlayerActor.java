@@ -26,11 +26,10 @@ public class PlayerActor extends Actor{
     private MovementDirection currentDirection;
     private float elapsedTime;
 
-    private float SPEED = 4.5f; // 11 = tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
+    private float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
-
-
-    public PlayerActor(){
+    public PlayerActor(float scale){
+        setScale(scale);
 
         // Set current direction to an initial value
         currentDirection = MovementDirection.NONE;
@@ -73,38 +72,40 @@ public class PlayerActor extends Actor{
         this.setPosition(0, 0);
     }
 
-
     // TODO: Implement map border and teleport through border correctly
     @Override
     public void act(float delta) {
+        // Change position according on direction and time
 
-//        System.out.println("## Loc:    X = " + this.getX() + "   Y = " + this.getY());
+        float posX = getX();
+        float posY = getY();
 
-
-        // Move player coordinates according to direction and switch animation if needed
-
-        // delta = time in seconds since the last frame.
-        //this.setX((Math.abs(getX()) + delta*SPEED*16*getScaleX())%this.getStage().getCamera().viewportWidth);
-
-        // change position depending on direction and time
         switch(currentDirection){
-            case UP:
-                this.setY((Math.abs(getY()) + delta*SPEED*16*getScaleY())%this.getStage().getCamera().viewportHeight);
-                break;
-            case DOWN:
-                this.setY((Math.abs(getY()) - delta*SPEED*16*getScaleY())%this.getStage().getCamera().viewportHeight);
+            case RIGHT:
+                posX += delta * SPEED * getScaleX();
                 break;
             case LEFT:
-                this.setX((Math.abs(getX()) - delta*SPEED*16*getScaleX())%this.getStage().getCamera().viewportWidth);
+                posX -= delta * SPEED * getScaleX();
                 break;
-            case RIGHT:
-                this.setX((Math.abs(getX()) + delta*SPEED*16*getScaleX())%this.getStage().getCamera().viewportWidth);
+            case UP:
+                posY += delta * SPEED * getScaleY();
                 break;
-            default:
-                // Do nothing
+            case DOWN:
+                posY -= delta * SPEED * getScaleY();
                 break;
+            default: break;
         }
 
+        float viewportWidth = this.getStage().getCamera().viewportWidth;
+        float viewportHeight = this.getStage().getCamera().viewportHeight;
+
+        float halfWidth = getScaleX() * getWidth() / 2;
+        float halfHeight = getScaleY() * getHeight() / 2;
+
+        posX = (posX + halfWidth + viewportWidth) % viewportWidth - halfWidth;
+        posY = (posY + halfHeight + viewportHeight) % viewportHeight - halfHeight;
+
+        this.setPosition(posX, posY);
     }
 
     // This is a hack, but I didnt find another easy and compact way yet

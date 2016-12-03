@@ -18,7 +18,12 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.io.IOException;
@@ -71,28 +76,27 @@ public class Game extends ApplicationAdapter {
 
 		screenWidth = Gdx.graphics.getWidth();
 		screenHeight = Gdx.graphics.getHeight();
-		float aspectRatio = (float)screenHeight/(float)screenWidth;
+		float aspectRatio = screenHeight / (float)screenWidth;
 
 		// Initialize map, mapRenderer and the collision layer
 		map = new TmxMapLoader().load("pacmanMap.tmx");
 		worldWidth  = map.getProperties().get("width",  Integer.class);
 		worldHeight = map.getProperties().get("height", Integer.class);
 
-		scale = ((float)screenWidth/(float)worldWidth)/4f;
+		scale = (screenWidth / (float)worldWidth) / 4;
 
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map, scale);//, 4.82f);
 		collisionRectangles = getCollisionRectangles(map);
 
-		// Initialize Camera and viewport
+		// Initialize camera and viewport
 		camera = new OrthographicCamera();
-		viewport = new FitViewport(worldWidth, worldHeight, camera);
+		viewport = new FitViewport(screenWidth, screenHeight, camera);
 
 		// Initialize stage
-		stage = new Stage(viewport);//viewport);
+		stage = new Stage(viewport);
 
 		// Initialize PacMan Actor
-		pacmanActor = new PlayerActor();
-		pacmanActor.setScale(scale);
+		pacmanActor = new PlayerActor(scale);
 //		pacmanActor.setPosition(camera.viewportWidth/2 - (pacmanActor.getWidth()/2)*pacmanActor.getScaleX(),
 //				camera.viewportHeight/2 - (pacmanActor.getHeight()/2)*pacmanActor.getScaleY());
 
@@ -125,16 +129,6 @@ public class Game extends ApplicationAdapter {
 	public void dispose () {
 		stage.dispose();
 		map.dispose();
-	}
-
-	@Override
-	public void resize(int width, int height) {
-
-		camera.viewportWidth  = width;
-		camera.viewportHeight = height;
-		camera.position.set(width/2f, height/2f, 0);
-		camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
-
 	}
 
 	private void detectMapCollision(){

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="56" height="62" tilewidth="4" tileheight="4" nextobjectid="128">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="56" height="62" tilewidth="4" tileheight="4" nextobjectid="130">
  <tileset firstgid="1" name="map_tilesheet" tilewidth="4" tileheight="4" tilecount="3472" columns="56">
   <image source="map_tilesheet.png" width="224" height="248"/>
  </tileset>
@@ -18,8 +18,8 @@
  </layer>
  <objectgroup name="Walls Layer">
   <object id="66" x="180" y="20" width="23.375" height="15.4375"/>
-  <object id="67" x="0" y="4" width="4" height="240"/>
-  <object id="68" x="220" y="4" width="4" height="240"/>
+  <object id="67" x="0" y="4" width="4" height="72"/>
+  <object id="68" x="220" y="4" width="4" height="72"/>
   <object id="69" x="0" y="0" width="224" height="4"/>
   <object id="70" x="0" y="244" width="224" height="4"/>
   <object id="71" x="60" y="196" width="8" height="24"/>
@@ -51,15 +51,17 @@
   <object id="97" x="60" y="20" width="32" height="16"/>
   <object id="98" x="20" y="20" width="24" height="16"/>
   <object id="99" x="20" y="52" width="24" height="8"/>
-  <object id="100" x="180" y="76" width="40" height="32"/>
-  <object id="101" x="4" y="76" width="40" height="32"/>
-  <object id="102" x="4" y="124" width="40" height="32"/>
-  <object id="103" x="180" y="124" width="40" height="32"/>
+  <object id="100" x="180" y="76" width="44" height="32"/>
+  <object id="101" x="0" y="76" width="44" height="32"/>
+  <object id="102" x="0" y="124" width="44" height="32"/>
+  <object id="103" x="180" y="124" width="44" height="32"/>
   <object id="104" x="108" y="4" width="8" height="32"/>
   <object id="105" x="84" y="100" width="4" height="32"/>
   <object id="106" x="136" y="100" width="4" height="32"/>
   <object id="107" x="88" y="100" width="16" height="4"/>
   <object id="108" x="120" y="100" width="16" height="4"/>
   <object id="109" x="88" y="128" width="48" height="4"/>
+  <object id="128" x="220" y="156" width="4" height="88"/>
+  <object id="129" x="0" y="156" width="4" height="88"/>
  </objectgroup>
 </map>

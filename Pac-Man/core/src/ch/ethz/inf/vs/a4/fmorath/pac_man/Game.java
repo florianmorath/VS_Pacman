@@ -31,7 +31,7 @@ public class Game extends ApplicationAdapter {
 	int screenHeight;
 	float scale;
 	Stage stage;
-	Player pacMan;
+	PacMan pacMan;
 
 	TiledMap map;
 	TiledMapRenderer tiledMapRenderer;
@@ -84,7 +84,7 @@ public class Game extends ApplicationAdapter {
 		stage = new Stage(viewport);
 
 		// Initialize PacMan Actor
-		pacMan = new Player();
+		pacMan = new PacMan();
 
 		stage.addActor(pacMan);
 	}

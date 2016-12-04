@@ -8,24 +8,23 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 /**
  * Created by markus on 25.11.16.
  */
 
-public class Player extends Actor{
+public class PacMan extends Actor {
 
     private Animation animation;
-    private MovementDirection currentDirection;
+    private MovementDirection currentDirection = MovementDirection.NONE;
     private float elapsedTime = 0f;
 
-    private float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
+    private static final float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
+    private static final int CORNER_TOLERANCE = 8;
 
-    public Player() {
-        // Set current direction to an initial value
-        currentDirection = MovementDirection.NONE;
-
+    public PacMan() {
         // Load textures
         TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("sprites/spritesheet.atlas"));
 
@@ -50,55 +49,52 @@ public class Player extends Actor{
     @Override
     public void act(float delta) {
         // Change position according to direction and time
-
-        float posX = getX();
-        float posY = getY();
-
-        switch(currentDirection){
-            case RIGHT:
-                posX += delta * SPEED * getScaleX();
-                break;
-            case LEFT:
-                posX -= delta * SPEED * getScaleX();
-                break;
-            case UP:
-                posY += delta * SPEED * getScaleY();
-                break;
-            case DOWN:
-                posY -= delta * SPEED * getScaleY();
-                break;
-            default: break;
-        }
+        float distance = SPEED * delta;
+        Vector2 direction = currentDirection.getVector();
+        Vector2 position = new Vector2(getX(), getY());
+        position = position.add(direction.scl(distance));
 
         float viewportWidth = this.getStage().getCamera().viewportWidth;
         float viewportHeight = this.getStage().getCamera().viewportHeight;
 
-        posX = (posX + viewportWidth) % viewportWidth;
-        posY = (posY + viewportHeight) % viewportHeight;
+        float halfWidth = getWidth() / 2;
+        float halfHeight = getHeight() / 2;
 
-        Rectangle player = new Rectangle(posX, posY, this.getWidth(), this.getHeight());
+        position.x = (position.x + halfWidth + viewportWidth) % viewportWidth - halfWidth;
+        position.y = (position.y + halfHeight + viewportHeight) % viewportHeight - halfHeight;
+
+        Rectangle player = new Rectangle(position.x, position.y, this.getWidth(), this.getHeight());
         for (Rectangle rect : Game.collisionRectangles) {
             if (Intersector.overlaps(rect, player)) {
-                switch(currentDirection){
-                    case RIGHT:
-                        posX = rect.x - player.width;
-                        break;
-                    case LEFT:
-                        posX = rect.x + rect.width;
-                        break;
-                    case UP:
-                        posY = rect.y - player.height;
-                        break;
-                    case DOWN:
-                        posY = rect.y + rect.height;
-                        break;
-                    default: break;
+                if (direction.x != 0) {
+                    if (Math.abs(rect.y + rect.height - position.y) < CORNER_TOLERANCE)
+                        position.y = rect.y + rect.height;
+                    else if (Math.abs(position.y + getHeight() - rect.y) < CORNER_TOLERANCE)
+                        position.y = rect.y - getHeight();
+                    else {
+                        if (currentDirection == MovementDirection.RIGHT)
+                            position.x = rect.x - player.width;
+                        else if (currentDirection == MovementDirection.LEFT)
+                            position.x = rect.x + rect.width;
+                        currentDirection = MovementDirection.NONE;
+                    }
+                } else if (direction.y != 0) {
+                    if (Math.abs(rect.x + rect.width - position.x) < CORNER_TOLERANCE)
+                        position.x = rect.x + rect.width;
+                    else if (Math.abs(position.x + getWidth() - rect.x) < CORNER_TOLERANCE)
+                        position.x = rect.x - getWidth();
+                    else {
+                        if (currentDirection == MovementDirection.UP)
+                            position.y = rect.y - player.height;
+                        else if (currentDirection == MovementDirection.DOWN)
+                            position.y = rect.y + rect.height;
+                        currentDirection = MovementDirection.NONE;
+                    }
                 }
-                currentDirection = MovementDirection.NONE;
             }
         }
 
-        this.setPosition(posX, posY);
+        this.setPosition(position.x, position.y);
     }
 
     @Override

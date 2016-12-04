@@ -5,13 +5,12 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
+import com.badlogic.gdx.utils.Align;
 
 /**
  * Created by markus on 25.11.16.
@@ -28,7 +27,7 @@ public class PlayerActor extends Actor{
 
     private float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
-    public PlayerActor(){
+    public PlayerActor() {
         // Set current direction to an initial value
         currentDirection = MovementDirection.NONE;
         elapsedTime = 0f;
@@ -61,19 +60,18 @@ public class PlayerActor extends Actor{
 
         currentAnimation = animRight;
 
-        // set Width and Heigt of the animation for later use
+        // set Width and Height of the animation for later use
         this.setWidth (currentAnimation.getKeyFrame(elapsedTime, true).getRegionWidth());
         this.setHeight(currentAnimation.getKeyFrame(elapsedTime, true).getRegionHeight());
 
         addListener(new PlayerActorGestureListener());
 
-        this.setPosition(0, 0);
+        this.setPosition(104f, 188f, Align.topLeft);
     }
 
-    // TODO: Implement map border and teleport through border correctly
     @Override
     public void act(float delta) {
-        // Change position according on direction and time
+        // Change position according to direction and time
 
         float posX = getX();
         float posY = getY();
@@ -103,6 +101,27 @@ public class PlayerActor extends Actor{
         posX = (posX + halfWidth + viewportWidth) % viewportWidth - halfWidth;
         posY = (posY + halfHeight + viewportHeight) % viewportHeight - halfHeight;
 
+        Rectangle player = new Rectangle(posX, posY, this.getWidth(), this.getHeight());
+        for (Rectangle rect : Game.collisionRectangles) {
+            if (Intersector.overlaps(rect, player)) {
+                switch(currentDirection){
+                    case RIGHT:
+                        posX = rect.x - player.width;
+                        break;
+                    case LEFT:
+                        posX = rect.x + rect.width;
+                        break;
+                    case UP:
+                        posY = rect.y - player.height;
+                        break;
+                    case DOWN:
+                        posY = rect.y + rect.height;
+                        break;
+                    default: break;
+                }
+            }
+        }
+
         this.setPosition(posX, posY);
     }
 
@@ -125,61 +144,42 @@ public class PlayerActor extends Actor{
                 this.getRotation());
     }
 
-
     // Returns the rectangle in world space (!)
     public Rectangle getRectangle(){
-//        return new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        Vector3 worldSpacePosition3 = this.getStage().getCamera().unproject(new Vector3(this.getX(), this.getY(), 0));
-        return new Rectangle(worldSpacePosition3.x, worldSpacePosition3.y, this.getWidth(), this.getHeight());
+        return new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+        //Vector3 worldSpacePosition3 = this.getStage().getCamera().unproject(new Vector3(this.getX(), this.getY(), 0));
+        //return new Rectangle(worldSpacePosition3.x, worldSpacePosition3.y, this.getWidth(), this.getHeight());
     }
 
-    public class PlayerActorGestureListener extends ActorGestureListener{
+    public class PlayerActorGestureListener extends ActorGestureListener {
 
         @Override
-        public void fling(InputEvent event, float velocityX, float velocityY, int button) {
-
+        public void fling(InputEvent event, float velocityX, float velocityY, int button)  {
             //System.out.println("### Fling event: x:" + velocityX + " y:" + velocityY);
 
-
-            if(Math.abs(velocityX) >= Math.abs(velocityY)){
+            if (Math.abs(velocityX) >= Math.abs(velocityY)) {
                 // X dominated
-                if (velocityX >= 0){
+                if (velocityX >= 0) {
                     // Right fling
                     currentDirection = MovementDirection.RIGHT;
-                }else{
+                    currentAnimation = animRight;
+                } else {
                     // Left fling
                     currentDirection = MovementDirection.LEFT;
+                    currentAnimation = animLeft;
                 }
-            }else{
+            } else {
                 // Y dominated
-                if(velocityY >= 0){
+                if (velocityY >= 0){
                     //Down fling
                     currentDirection = MovementDirection.UP;
-                }else{
+                    currentAnimation = animUp;
+                } else {
                     // Up fling
                     currentDirection = MovementDirection.DOWN;
+                    currentAnimation = animDown;
                 }
             }
-
-            // Switch current animation according to current direction
-            switch (currentDirection){
-                case UP:
-                    currentAnimation = animUp;
-                    break;
-                case DOWN:
-                    currentAnimation = animDown;
-                    break;
-                case LEFT:
-                    currentAnimation = animLeft;
-                    break;
-                case RIGHT:
-                    currentAnimation = animRight;
-                    break;
-                default:
-                    // Dont change the current Animation
-                    break;
-            }
-
         }
     }
 }

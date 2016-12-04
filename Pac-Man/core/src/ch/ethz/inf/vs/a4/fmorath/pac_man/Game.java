@@ -4,11 +4,14 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Intersector;
@@ -26,6 +29,8 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
+import org.w3c.dom.css.Rect;
 
 import java.io.IOException;
 
@@ -45,7 +50,7 @@ public class Game extends ApplicationAdapter {
 
 	TiledMap map;
 	TiledMapRenderer tiledMapRenderer;
-	Array<Rectangle> collisionRectangles;
+	public static Array<Rectangle> collisionRectangles = new Array<Rectangle>();
 
 	int worldWidth;
 	int worldHeight;
@@ -53,8 +58,7 @@ public class Game extends ApplicationAdapter {
 	OrthographicCamera camera;
 	Viewport viewport;
 
-	int backgroundLayerId = 0;
-	int objectLayerId = 2;
+	int collisionLayerId = 2;
 
 	private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
 		@Override
@@ -85,7 +89,7 @@ public class Game extends ApplicationAdapter {
 		worldHeight = map.getProperties().get("height", Integer.class);
 
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
-		collisionRectangles = getCollisionRectangles(map);
+		initCollisionRectangles();
 
 		// Initialize camera and viewport
 		camera = new OrthographicCamera();
@@ -120,8 +124,6 @@ public class Game extends ApplicationAdapter {
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
 
-		//detectMapCollision();
-
 //		WallCollisionDetection();
 
 	}
@@ -132,45 +134,11 @@ public class Game extends ApplicationAdapter {
 		map.dispose();
 	}
 
-	private void detectMapCollision(){
-
-		for(Rectangle rect : collisionRectangles){
-
-//			System.out.println("## Rect info: current Rectangle: x:" + rect.getX() + " y: " + rect.getY() + " w:" + rect.getWidth() + " h:" + rect.getHeight() +
-//					" Pacman Rectangle: x:" + pacmanActor.getRectangle().getX() + " y:" + pacmanActor.getRectangle().getY() +
-//					" w: " + pacmanActor.getRectangle().getWidth() + " h:" + pacmanActor.getRectangle().getHeight());
-
-
-			if(Intersector.overlaps(rect, pacmanActor.getRectangle())){
-				System.out.println("### Collision");
-			}
-		}
-	}
-
-	// Function to extract rectangles from the object layer
-	private Array<Rectangle> getCollisionRectangles(TiledMap thisMap){
-
-		// 0.) Initialize vectors and result
-		Array<Rectangle> result = new Array<Rectangle>();
-		Vector2 worldPos2;
-		Vector3 worldPos3;
-
-		// 1.) Get an array of RectangleMapObjects
-		MapLayer collisionLayer = thisMap.getLayers().get(objectLayerId);
-		MapObjects mapObjects = collisionLayer.getObjects();
-		Array<RectangleMapObject> rectangleMapObjects = (Array<RectangleMapObject>)mapObjects.getByType(RectangleMapObject.class);
-
-		// 2.) extract each rectangle
-		for(RectangleMapObject currentRect: rectangleMapObjects){
-
-//			worldPos2 = currentRect.getRectangle().getPosition();
-//			worldPos3 = new Vector3(worldPos2.x, worldPos2.y, 0);
-//			camera.project(worldPos3);
-//			result.add(new Rectangle(worldPos3.x, worldPos3.y, currentRect.getRectangle().getWidth(), currentRect.getRectangle().getHeight()));
-			result.add(currentRect.getRectangle());
-		}
-
-		return result;
+	// Function to extract rectangles from the collision layer
+	private void initCollisionRectangles() {
+		MapLayer collisionLayer = map.getLayers().get(collisionLayerId);
+		for (RectangleMapObject rectangleObject : collisionLayer.getObjects().getByType(RectangleMapObject.class))
+			collisionRectangles.add(rectangleObject.getRectangle());
 	}
 
 

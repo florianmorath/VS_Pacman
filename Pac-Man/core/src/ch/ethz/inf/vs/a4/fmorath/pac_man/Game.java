@@ -2,6 +2,7 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
@@ -13,7 +14,6 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -29,13 +29,12 @@ public class Game extends ApplicationAdapter {
 
 	int screenWidth;
 	int screenHeight;
-	float scale;
 	Stage stage;
 	PacMan pacMan;
 
 	TiledMap map;
 	TiledMapRenderer tiledMapRenderer;
-	public static Array<Rectangle> collisionRectangles = new Array<Rectangle>();
+	public static Array<Rectangle> walls = new Array<Rectangle>();
 
 	int worldWidth;
 	int worldHeight;
@@ -43,16 +42,7 @@ public class Game extends ApplicationAdapter {
 	OrthographicCamera camera;
 	Viewport viewport;
 
-	int collisionLayerId = 2;
-
-	private Pool<Rectangle> rectPool = new Pool<Rectangle>() {
-		@Override
-		protected Rectangle newObject () {
-			return new Rectangle();
-		}
-	};
-
-	private Array<Rectangle> tiles = new Array<Rectangle>();
+	int wallLayerId = 2;
 
 	@Override
 	public void create () {
@@ -69,7 +59,7 @@ public class Game extends ApplicationAdapter {
 		float aspectRatio = screenHeight / (float)screenWidth;
 
 		// Initialize map, mapRenderer and the collision layer
-		map = new TmxMapLoader().load("pacmanMap.tmx");
+		map = new TmxMapLoader().load("map.tmx");
 		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
 		worldHeight = 4 * map.getProperties().get("height", Integer.class);
 
@@ -80,13 +70,19 @@ public class Game extends ApplicationAdapter {
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(worldWidth, worldHeight, camera);
 
-		// Initialize stage
 		stage = new Stage(viewport);
 
-		// Initialize PacMan Actor
-		pacMan = new PacMan();
+		pacMan = new PacMan(104, 52);
+		Ghost blinky = new Ghost(104, 148, Ghost.BLINKY);
+		Ghost pinky = new Ghost(104, 124, Ghost.PINKY);
+		Ghost inky = new Ghost(88, 124, Ghost.INKY);
+		Ghost clyde = new Ghost(120, 124, Ghost.CLYDE);
 
 		stage.addActor(pacMan);
+		stage.addActor(blinky);
+		stage.addActor(pinky);
+		stage.addActor(inky);
+		stage.addActor(clyde);
 	}
 
 	@Override
@@ -120,9 +116,9 @@ public class Game extends ApplicationAdapter {
 
 	// Function to extract rectangles from the collision layer
 	private void initCollisionRectangles() {
-		MapLayer collisionLayer = map.getLayers().get(collisionLayerId);
-		for (RectangleMapObject rectangleObject : collisionLayer.getObjects().getByType(RectangleMapObject.class))
-			collisionRectangles.add(rectangleObject.getRectangle());
+		MapLayer wallLayer = map.getLayers().get(wallLayerId);
+		for (RectangleMapObject wall : wallLayer.getObjects().getByType(RectangleMapObject.class))
+			walls.add(wall.getRectangle());
 	}
 
 //	private void WallCollisionDetection() {

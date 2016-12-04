@@ -11,9 +11,9 @@ import com.badlogic.gdx.math.Vector2;
  */
 public enum MovementDirection {
     UP(0),
-    LEFT(1),
+    RIGHT(1),
     DOWN(2),
-    RIGHT(3),
+    LEFT(2),
     NONE(4);
 
     private int val;
@@ -37,11 +37,11 @@ public enum MovementDirection {
     public static MovementDirection createDirectionFromInt(int i) {
         switch (i){
             case 0: return UP;
-            case 1: return LEFT;
+            case 1: return RIGHT;
             case 2: return DOWN;
-            case 3: return RIGHT;
+            case 3: return LEFT;
+            default: return NONE;
         }
-        return NONE;
     }
 
     /**
@@ -51,10 +51,10 @@ public enum MovementDirection {
     public Vector2 getVector() {
         switch (this){
             case UP: return new Vector2(0, 1);
-            case LEFT: return new Vector2(-1, 0);
-            case DOWN: return new Vector2(0, -1);
             case RIGHT: return new Vector2(1, 0);
+            case DOWN: return new Vector2(0, -1);
+            case LEFT: return new Vector2(-1, 0);
+            default: return new Vector2(0, 0);
         }
-        return new Vector2(0, 0);
     }
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -64,9 +65,9 @@ public class PlayerActor extends Actor{
         this.setWidth (currentAnimation.getKeyFrame(elapsedTime, true).getRegionWidth());
         this.setHeight(currentAnimation.getKeyFrame(elapsedTime, true).getRegionHeight());
 
-        addListener(new PlayerActorGestureListener());
+        Gdx.input.setInputProcessor(new GestureDetector(new MovementGestureAdapter()));
 
-        this.setPosition(104f, 188f, Align.topLeft);
+        this.setPosition(104, 52);
     }
 
     @Override
@@ -125,14 +126,6 @@ public class PlayerActor extends Actor{
         this.setPosition(posX, posY);
     }
 
-    // This is a hack, but I didnt find another easy and compact way yet
-    // TODO: Maybe remove this hack and implement it more correctly (e.g. in a personalized Stage class)
-    @Override
-    public Actor hit(float x, float y, boolean touchable) {
-        return this;
-        //return super.hit(x, y, touchable);
-    }
-
     @Override
     public void draw(Batch batch, float parentAlpha) {
         elapsedTime += Gdx.graphics.getDeltaTime();
@@ -144,17 +137,10 @@ public class PlayerActor extends Actor{
                 this.getRotation());
     }
 
-    // Returns the rectangle in world space (!)
-    public Rectangle getRectangle(){
-        return new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        //Vector3 worldSpacePosition3 = this.getStage().getCamera().unproject(new Vector3(this.getX(), this.getY(), 0));
-        //return new Rectangle(worldSpacePosition3.x, worldSpacePosition3.y, this.getWidth(), this.getHeight());
-    }
-
-    public class PlayerActorGestureListener extends ActorGestureListener {
+    private class MovementGestureAdapter extends GestureDetector.GestureAdapter {
 
         @Override
-        public void fling(InputEvent event, float velocityX, float velocityY, int button)  {
+        public boolean fling(float velocityX, float velocityY, int button) {
             //System.out.println("### Fling event: x:" + velocityX + " y:" + velocityY);
 
             if (Math.abs(velocityX) >= Math.abs(velocityY)) {
@@ -172,14 +158,15 @@ public class PlayerActor extends Actor{
                 // Y dominated
                 if (velocityY >= 0){
                     //Down fling
-                    currentDirection = MovementDirection.UP;
-                    currentAnimation = animUp;
-                } else {
-                    // Up fling
                     currentDirection = MovementDirection.DOWN;
                     currentAnimation = animDown;
+                } else {
+                    // Up fling
+                    currentDirection = MovementDirection.UP;
+                    currentAnimation = animUp;
                 }
             }
+            return false;
         }
     }
 }

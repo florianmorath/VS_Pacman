@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -85,35 +86,29 @@ public class Game extends ApplicationAdapter {
 
 		// Initialize map, mapRenderer and the collision layer
 		map = new TmxMapLoader().load("pacmanMap.tmx");
-		worldWidth  = map.getProperties().get("width",  Integer.class);
-		worldHeight = map.getProperties().get("height", Integer.class);
+		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
+		worldHeight = 4 * map.getProperties().get("height", Integer.class);
 
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
 		initCollisionRectangles();
 
 		// Initialize camera and viewport
 		camera = new OrthographicCamera();
-		viewport = new FitViewport(4 * worldWidth, 4 * worldHeight, camera);
+		viewport = new FitViewport(worldWidth, worldHeight, camera);
 
 		// Initialize stage
 		stage = new Stage(viewport);
 
 		// Initialize PacMan Actor
 		pacmanActor = new PlayerActor();
-//		pacmanActor.setPosition(camera.viewportWidth/2 - (pacmanActor.getWidth()/2)*pacmanActor.getScaleX(),
-//				camera.viewportHeight/2 - (pacmanActor.getHeight()/2)*pacmanActor.getScaleY());
 
 		stage.addActor(pacmanActor);
-
-		Gdx.input.setInputProcessor(stage);
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		Gdx.gl.glViewport(0, 0, screenWidth, screenHeight);
 
 		camera.update();
 
@@ -134,14 +129,17 @@ public class Game extends ApplicationAdapter {
 		map.dispose();
 	}
 
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+    }
+
 	// Function to extract rectangles from the collision layer
 	private void initCollisionRectangles() {
 		MapLayer collisionLayer = map.getLayers().get(collisionLayerId);
 		for (RectangleMapObject rectangleObject : collisionLayer.getObjects().getByType(RectangleMapObject.class))
 			collisionRectangles.add(rectangleObject.getRectangle());
 	}
-
-
 
 //	private void WallCollisionDetection() {
 //

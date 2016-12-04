@@ -9,65 +9,42 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
-import com.badlogic.gdx.utils.Align;
 
 /**
  * Created by markus on 25.11.16.
  */
 
-public class PlayerActor extends Actor{
+public class Player extends Actor{
 
-    private TextureAtlas textureAtlas;
-    private TextureRegion[] upFrames, downFrames, leftFrames, rightFrames;
-    private Animation animUp, animDown, animLeft, animRight;
-    private Animation currentAnimation;
+    private Animation animation;
     private MovementDirection currentDirection;
-    private float elapsedTime;
+    private float elapsedTime = 0f;
 
     private float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
-    public PlayerActor() {
+    public Player() {
         // Set current direction to an initial value
         currentDirection = MovementDirection.NONE;
-        elapsedTime = 0f;
 
         // Load textures
-        textureAtlas = new TextureAtlas(Gdx.files.internal("sprites/spritesheet.atlas"));
+        TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("sprites/spritesheet.atlas"));
 
         // Initialize animations
-        rightFrames = new TextureRegion[2];
-        rightFrames[0] = textureAtlas.findRegion("pacman_base");
-        rightFrames[1] = textureAtlas.findRegion("pacman_right");
+        TextureRegion[] frames = new TextureRegion[textureAtlas.getRegions().size];
+        for (int i = 0; i < frames.length; i++)
+            frames[i] = textureAtlas.findRegion("pacman_" + i);
 
-        leftFrames = new TextureRegion[2];
-        leftFrames[0] = textureAtlas.findRegion("pacman_base");
-        leftFrames[1] = textureAtlas.findRegion("pacman_left");
-
-        upFrames = new TextureRegion[2];
-        upFrames[0] = textureAtlas.findRegion("pacman_base");
-        upFrames[1] = textureAtlas.findRegion("pacman_up");
-
-        downFrames = new TextureRegion[2];
-        downFrames[0] = textureAtlas.findRegion("pacman_base");
-        downFrames[1] = textureAtlas.findRegion("pacman_down");
-
-        // Set standard animations
-        animUp    = new Animation(1/3f, upFrames);
-        animDown  = new Animation(1/3f, downFrames);
-        animLeft  = new Animation(1/3f, leftFrames);
-        animRight = new Animation(1/3f, rightFrames);
-
-        currentAnimation = animRight;
+        // Set standard animation
+        animation = new Animation(1/8f, frames);
 
         // set Width and Height of the animation for later use
-        this.setWidth (currentAnimation.getKeyFrame(elapsedTime, true).getRegionWidth());
-        this.setHeight(currentAnimation.getKeyFrame(elapsedTime, true).getRegionHeight());
+        this.setWidth(16);
+        this.setHeight(16);
+
+        this.setOrigin(getWidth() / 2, getHeight() / 2);
+        this.setPosition(104, 52);
 
         Gdx.input.setInputProcessor(new GestureDetector(new MovementGestureAdapter()));
-
-        this.setPosition(104, 52);
     }
 
     @Override
@@ -96,11 +73,8 @@ public class PlayerActor extends Actor{
         float viewportWidth = this.getStage().getCamera().viewportWidth;
         float viewportHeight = this.getStage().getCamera().viewportHeight;
 
-        float halfWidth = getScaleX() * getWidth() / 2;
-        float halfHeight = getScaleY() * getHeight() / 2;
-
-        posX = (posX + halfWidth + viewportWidth) % viewportWidth - halfWidth;
-        posY = (posY + halfHeight + viewportHeight) % viewportHeight - halfHeight;
+        posX = (posX + viewportWidth) % viewportWidth;
+        posY = (posY + viewportHeight) % viewportHeight;
 
         Rectangle player = new Rectangle(posX, posY, this.getWidth(), this.getHeight());
         for (Rectangle rect : Game.collisionRectangles) {
@@ -120,6 +94,7 @@ public class PlayerActor extends Actor{
                         break;
                     default: break;
                 }
+                currentDirection = MovementDirection.NONE;
             }
         }
 
@@ -128,8 +103,9 @@ public class PlayerActor extends Actor{
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        elapsedTime += Gdx.graphics.getDeltaTime();
-        batch.draw(currentAnimation.getKeyFrame(elapsedTime, true),
+        if (currentDirection != MovementDirection.NONE)
+            elapsedTime += Gdx.graphics.getDeltaTime();
+        batch.draw(animation.getKeyFrame(elapsedTime, true),
                 getX(), getY(),
                 this.getOriginX(), this.getOriginY(),
                 this.getWidth(), getHeight(),
@@ -148,25 +124,24 @@ public class PlayerActor extends Actor{
                 if (velocityX >= 0) {
                     // Right fling
                     currentDirection = MovementDirection.RIGHT;
-                    currentAnimation = animRight;
                 } else {
                     // Left fling
                     currentDirection = MovementDirection.LEFT;
-                    currentAnimation = animLeft;
                 }
             } else {
                 // Y dominated
-                if (velocityY >= 0){
+                if (velocityY >= 0) {
                     //Down fling
                     currentDirection = MovementDirection.DOWN;
-                    currentAnimation = animDown;
                 } else {
                     // Up fling
                     currentDirection = MovementDirection.UP;
-                    currentAnimation = animUp;
                 }
             }
-            return false;
+
+            setRotation(currentDirection.getValue() * 90);
+
+            return true;
         }
     }
 }

@@ -1,40 +1,26 @@
 spritesheet.png
-size: 80, 16
+size: 45, 15
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-pacman_base
+pacman_0
   rotate: false
   xy: 0, 0
-  size: 16, 16
-  orig: 16, 16
+  size: 15, 15
+  orig: 15, 15
   offset: 0, 0
   index: -1
-pacman_down
+pacman_1
   rotate: false
-  xy: 16, 0
-  size: 16, 16
-  orig: 16, 16
+  xy: 15, 0
+  size: 15, 15
+  orig: 15, 15
   offset: 0, 0
   index: -1
-pacman_left
+pacman_2
   rotate: false
-  xy: 32, 0
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-pacman_right
-  rotate: false
-  xy: 48, 0
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
-pacman_up
-  rotate: false
-  xy: 64, 0
-  size: 16, 16
-  orig: 16, 16
+  xy: 30, 0
+  size: 15, 15
+  orig: 15, 15
   offset: 0, 0
   index: -1

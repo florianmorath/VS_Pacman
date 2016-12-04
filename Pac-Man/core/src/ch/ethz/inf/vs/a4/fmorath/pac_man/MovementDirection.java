@@ -9,9 +9,9 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
  */
 public enum MovementDirection {
     UP(0),
-    RIGHT(1),
+    LEFT(1),
     DOWN(2),
-    LEFT(3),
+    RIGHT(3),
     NONE(4);
 
     private int val;
@@ -35,9 +35,9 @@ public enum MovementDirection {
     public static MovementDirection createDirectionFromInt(int i){
         switch(i){
             case 0: return UP;
-            case 1: return RIGHT;
+            case 1: return LEFT;
             case 2: return DOWN;
-            case 3: return LEFT;
+            case 3: return RIGHT;
         }
         return NONE;
     }

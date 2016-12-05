@@ -1,7 +1,6 @@
-package ch.ethz.inf.vs.a4.fmorath.pac_man;
+package ch.ethz.inf.vs.a4.fmorath.pac_man.characters;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Intersector;
@@ -9,23 +8,32 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Map;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+
 /**
  * Created by linus on 04.12.2016.
  */
 
 public abstract class Character extends Actor {
 
-    protected static final int CORNER_TOLERANCE = 8;
-    protected static final float FRAME_DURATION = 1/8f;
+    protected static final int CORNER_TOLERANCE = 5;
+    protected static final float FRAME_DURATION = 0.05f;
     private static final float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
     protected MovementDirection currentDirection = MovementDirection.NONE;
     protected float elapsedTime = 0f;
+    protected Map map;
 
     protected abstract void initAnimations();
-    protected abstract void updateAnimation();
+    protected abstract void updateRepresentation();
 
-    public Character(int x, int y) {
+    public Rectangle getRectangle() {
+        return new Rectangle(getX(), getY(), getWidth(), getHeight());
+    }
+
+    public Character(Map map, int x, int y) {
+        this.map = map;
         this.setPosition(x, y);
         initAnimations();
         // TODO: Only set input processor if this is the local player's character
@@ -43,8 +51,8 @@ public abstract class Character extends Actor {
         Vector2 position = new Vector2(getX(), getY());
         position = position.add(direction.scl(distance));
 
-        float viewportWidth = this.getStage().getCamera().viewportWidth;
-        float viewportHeight = this.getStage().getCamera().viewportHeight;
+        float viewportWidth = getStage().getCamera().viewportWidth;
+        float viewportHeight = getStage().getCamera().viewportHeight;
 
         float halfWidth = getWidth() / 2;
         float halfHeight = getHeight() / 2;
@@ -53,7 +61,7 @@ public abstract class Character extends Actor {
         position.y = (position.y + halfHeight + viewportHeight) % viewportHeight - halfHeight;
 
         Rectangle player = new Rectangle(position.x, position.y, this.getWidth(), this.getHeight());
-        for (Rectangle wall : Game.walls) {
+        for (Rectangle wall : map.getWalls()) {
             if (Intersector.overlaps(wall, player)) {
                 if (direction.x != 0) {
                     if (Math.abs(wall.y + wall.height - position.y) < CORNER_TOLERANCE)
@@ -115,7 +123,7 @@ public abstract class Character extends Actor {
                     currentDirection = MovementDirection.UP;
                 }
             }
-            updateAnimation();
+            updateRepresentation();
 
             return true;
         }

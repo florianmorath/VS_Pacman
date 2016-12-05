@@ -2,18 +2,12 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -27,22 +21,17 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
 
 public class Game extends ApplicationAdapter {
 
-	int screenWidth;
-	int screenHeight;
-	Stage stage;
-	PacMan pacMan;
+	private int screenWidth;
+	private int screenHeight;
+	private int worldWidth;
+	private int worldHeight;
 
-	TiledMap map;
-	TiledMapRenderer tiledMapRenderer;
-	public static Array<Rectangle> walls = new Array<Rectangle>();
+	private TiledMap tiledMap;
+	private TiledMapRenderer tiledMapRenderer;
 
-	int worldWidth;
-	int worldHeight;
-
-	OrthographicCamera camera;
-	Viewport viewport;
-
-	int wallLayerId = 2;
+	private OrthographicCamera camera;
+	private Viewport viewport;
+	private Map map;
 
 	@Override
 	public void create () {
@@ -58,31 +47,18 @@ public class Game extends ApplicationAdapter {
 		screenHeight = Gdx.graphics.getHeight();
 		float aspectRatio = screenHeight / (float)screenWidth;
 
-		// Initialize map, mapRenderer and the collision layer
-		map = new TmxMapLoader().load("map.tmx");
-		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
-		worldHeight = 4 * map.getProperties().get("height", Integer.class);
+		// Initialize tiledMap, mapRenderer and the collision layer
+		tiledMap = new TmxMapLoader().load("map.tmx");
+		worldWidth  = 4 * tiledMap.getProperties().get("width",  Integer.class);
+		worldHeight = 4 * tiledMap.getProperties().get("height", Integer.class);
 
-		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
-		initCollisionRectangles();
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
 		// Initialize camera and viewport
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(worldWidth, worldHeight, camera);
 
-		stage = new Stage(viewport);
-
-		pacMan = new PacMan(104, 52);
-		Ghost blinky = new Ghost(104, 148, Ghost.BLINKY);
-		Ghost pinky = new Ghost(104, 124, Ghost.PINKY);
-		Ghost inky = new Ghost(88, 124, Ghost.INKY);
-		Ghost clyde = new Ghost(120, 124, Ghost.CLYDE);
-
-		stage.addActor(pacMan);
-		stage.addActor(blinky);
-		stage.addActor(pinky);
-		stage.addActor(inky);
-		stage.addActor(clyde);
+		map = new Map(viewport, tiledMap);
 	}
 
 	@Override
@@ -95,9 +71,9 @@ public class Game extends ApplicationAdapter {
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
 
-//		stage.getBatch().setProjectionMatrix(camera.combined);
-		stage.act(Gdx.graphics.getDeltaTime());
-		stage.draw();
+//		map.getBatch().setProjectionMatrix(camera.combined);
+		map.act(Gdx.graphics.getDeltaTime());
+		map.draw();
 
 //		WallCollisionDetection();
 
@@ -105,21 +81,14 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void dispose () {
-		stage.dispose();
 		map.dispose();
+		tiledMap.dispose();
 	}
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
     }
-
-	// Function to extract rectangles from the collision layer
-	private void initCollisionRectangles() {
-		MapLayer wallLayer = map.getLayers().get(wallLayerId);
-		for (RectangleMapObject wall : wallLayer.getObjects().getByType(RectangleMapObject.class))
-			walls.add(wall.getRectangle());
-	}
 
 //	private void WallCollisionDetection() {
 //
@@ -144,7 +113,7 @@ public class Game extends ApplicationAdapter {
 //
 //		int startXX = Math.round(startX);
 //		int startYY = Math.round(startY);
-//		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
+//		TiledMapTileLayer layer = (TiledMapTileLayer)tiledMap.getLayers().get("Walls Layer");
 //
 //		rectPool.freeAll(tiles);
 //		tiles.clear();

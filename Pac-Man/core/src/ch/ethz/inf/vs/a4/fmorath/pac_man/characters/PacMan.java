@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.fmorath.pac_man;
+package ch.ethz.inf.vs.a4.fmorath.pac_man.characters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -6,12 +6,14 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.*;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
+
 /**
  * Created by markus on 25.11.16.
  */
 
 public class PacMan extends Character {
-
 
     private Animation currentAnimation;
     private Animation animUp, animRight, animDown, animLeft;
@@ -50,7 +52,7 @@ public class PacMan extends Character {
     }
 
     @Override
-    protected void updateAnimation() {
+    protected void updateRepresentation() {
         switch (currentDirection){
             case UP: currentAnimation = animUp; break;
             case RIGHT: currentAnimation = animRight; break;
@@ -59,10 +61,18 @@ public class PacMan extends Character {
         }
     }
 
-    public PacMan(int x, int y) {
-        super(x, y);
+    public PacMan(Map map, int x, int y) {
+        super(map, x, y);
         this.setWidth(currentAnimation.getKeyFrame(0).getRegionWidth());
         this.setHeight(currentAnimation.getKeyFrame(0).getRegionHeight());
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        for (Collectible collectible : map.getCollectibles())
+            if (collectible.intersects(this))
+                collectible.collect(this);
     }
 
     @Override

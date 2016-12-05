@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.fmorath.pac_man;
+package ch.ethz.inf.vs.a4.fmorath.pac_man.characters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -7,6 +7,9 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Map;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 
 /**
  * Created by linus on 04.12.2016.
@@ -44,7 +47,7 @@ public class Ghost extends Character {
     }
 
     @Override
-    protected void updateAnimation() {
+    protected void updateRepresentation() {
         switch (currentDirection){
             case UP: currentSprite = spriteUp; break;
             case RIGHT: currentSprite = spriteRight; break;
@@ -53,8 +56,8 @@ public class Ghost extends Character {
         }
     }
 
-    public Ghost(int x, int y, Color color) {
-        super(x, y);
+    public Ghost(Map map, int x, int y, Color color) {
+        super(map, x, y);
         this.color = color;
         this.setWidth(currentSprite.getWidth());
         this.setHeight(currentSprite.getHeight());

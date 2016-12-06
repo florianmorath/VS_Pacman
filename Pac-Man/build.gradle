@@ -18,7 +18,7 @@ allprojects {
 
     version = '1.0'
     ext {
-        appName = "my-gdx-game"
+        appName = "ch-ethz-inf-vs-a4-fmorath-pac_man"
         gdxVersion = '1.9.4'
         roboVMVersion = '2.2.0'
         box2DLightsVersion = '1.4'
@@ -93,6 +93,7 @@ project(":core") {
 
 
     dependencies {
+        compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
     }
 }

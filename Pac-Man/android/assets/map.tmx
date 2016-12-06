@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="56" height="62" tilewidth="4" tileheight="4" nextobjectid="394">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="56" height="62" tilewidth="4" tileheight="4" nextobjectid="398">
  <tileset firstgid="1" name="map_tilesheet" tilewidth="4" tileheight="4" tilecount="3472" columns="56">
   <image source="map_tilesheet.png" width="224" height="248"/>
  </tileset>
@@ -72,7 +72,7 @@
  </objectgroup>
  <layer name="Small Coins Layer" width="56" height="62">
   <data encoding="base64" compression="zlib">
-   eJztWtsNAzEIyx75aq+v/Se8LECBCCcBmR+kyIeLLKeKoDVGhXj01p4dl3fzXePs1XF5N5/U9yxOw0fVseKkvmdxGj6qjhX3HmefAvpJfXzH2a+AflIf9J8Pp+FX+w/9f7Q6S31XyZJ+WkT5CVUf5T+vn1D1qd//yK4f6j2Axkffn97v0Xjte2tE+exU3iifncpL/XLzUr/cvNQvNy/1y81L/XLzUr/cvNQvNy/1y81L/XLzUr8zebk/wf0JD57z29jfR/18OA2/a/8Fde+tqqPtv6DuvVV1rHs8Xt/smt/O8np9s2t+O8tL/Wznp/By/p57/o56X6H9aq2Leteh/WqtS/3m4jT9qmSp7yqZUSNuejbquQ==
+   eJztWssOBCEI8z887eP/v3H3vAkLKBUw7YVkUumQBmcMjkHcgMcc4zlxMVvv9X32nriYrSfVvcrT+FF5rDyp7lWexo/Ks5v3F9X920V1/ySw/3w8jX+6/9Dfo9NRqvuWKPmnIaqfUPlR/be7v0Xlp3//0d0/1HkAzY/eP73r0XxtvRWn/gOzdKP6rKou/eutS/9669K/3rr0r7cu/eutS/9669K/3rr0r7cu/eutS/9q6vL+BO9PePic38a+H/3z8TR+1v0X1L53Ko+1/uh971QeK7x9kzW/XdX19k3W/HZVl/7ZnlfR5fy99/wddb5C96s1L+pch+5Xa176t4Zq/t0SpbpvicQd+AAUc+ah
   </data>
  </layer>
  <objectgroup name="Small Coins Collision Layer">
@@ -316,15 +316,16 @@
   <object id="387" x="208" y="208" width="8" height="8"/>
   <object id="388" x="208" y="216" width="8" height="8"/>
   <object id="389" x="208" y="224" width="8" height="8"/>
-  <object id="390" x="208" y="184" width="8" height="8"/>
-  <object id="391" x="8" y="184" width="8" height="8"/>
-  <object id="392" x="8" y="24" width="8" height="8"/>
-  <object id="393" x="208" y="24" width="8" height="8"/>
  </objectgroup>
  <layer name="Large Coins Layer" width="56" height="62">
   <data encoding="base64" compression="zlib">
-   eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAAjwY2QAAB
+   eJzt2rENwCAMRUHvQU3C/hPCAqkcgbDuyl/59Y4AIKO3iKedviLvq+Nd2yjQV6UDAAAAAAAAAOBv/l/uUKUDAADYbwKcAwQZ
   </data>
  </layer>
- <objectgroup name="Large Coins Collision Layer"/>
+ <objectgroup name="Large Coins Collision Layer">
+  <object id="394" x="8" y="24" width="8" height="8"/>
+  <object id="395" x="208" y="24" width="8" height="8"/>
+  <object id="396" x="208" y="184" width="8" height="8"/>
+  <object id="397" x="8" y="184" width="8" height="8"/>
+ </objectgroup>
 </map>

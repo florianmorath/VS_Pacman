@@ -8,10 +8,12 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Client;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.ExampleHandler;
@@ -26,12 +28,22 @@ public class Game extends ApplicationAdapter {
 	private int worldWidth;
 	private int worldHeight;
 
-	private TiledMap tiledMap;
-	private TiledMapRenderer tiledMapRenderer;
+	private TiledMap map;
+	private TiledMapRenderer mapRenderer;
 
 	private OrthographicCamera camera;
 	private Viewport viewport;
-	private Map map;
+	private Round round;
+
+	private int highscore = 0;
+
+	public int getHighscore() {
+		return highscore;
+	}
+
+	public void setHighscore(int highscore) {
+		this.highscore = highscore;
+	}
 
 	@Override
 	public void create () {
@@ -47,33 +59,34 @@ public class Game extends ApplicationAdapter {
 		screenHeight = Gdx.graphics.getHeight();
 		float aspectRatio = screenHeight / (float)screenWidth;
 
-		// Initialize tiledMap, mapRenderer and the collision layer
-		tiledMap = new TmxMapLoader().load("map.tmx");
-		worldWidth  = 4 * tiledMap.getProperties().get("width",  Integer.class);
-		worldHeight = 4 * tiledMap.getProperties().get("height", Integer.class);
+		map = new TmxMapLoader().load("map.tmx");
+		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
+		worldHeight = 4 * map.getProperties().get("height", Integer.class);
 
-		tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+		mapRenderer = new OrthogonalTiledMapRenderer(map);
 
-		// Initialize camera and viewport
 		camera = new OrthographicCamera();
-		viewport = new FitViewport(worldWidth, worldHeight, camera);
+		viewport = new FitViewport(worldWidth, worldHeight + 40, camera);
 
-		map = new Map(viewport, tiledMap);
+		Player[] players = new Player[5];
+		Arrays.fill(players, new Player(this));
+		round = new Round(this, viewport, map, players);
 	}
 
 	@Override
-	public void render () {
+	public void render() {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		camera.position.set(new Vector3(worldWidth / 2, worldHeight / 2 + 4, 0));
 		camera.update();
 
-		tiledMapRenderer.setView(camera);
-		tiledMapRenderer.render();
+		mapRenderer.setView(camera);
+		mapRenderer.render();
 
-//		map.getBatch().setProjectionMatrix(camera.combined);
-		map.act(Gdx.graphics.getDeltaTime());
-		map.draw();
+//		round.getBatch().setProjectionMatrix(camera.combined);
+		round.act(Gdx.graphics.getDeltaTime());
+		round.draw();
 
 //		WallCollisionDetection();
 
@@ -81,13 +94,13 @@ public class Game extends ApplicationAdapter {
 
 	@Override
 	public void dispose () {
+		round.dispose();
 		map.dispose();
-		tiledMap.dispose();
 	}
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
+        viewport.update(width, height, true);
     }
 
 //	private void WallCollisionDetection() {
@@ -113,7 +126,7 @@ public class Game extends ApplicationAdapter {
 //
 //		int startXX = Math.round(startX);
 //		int startYY = Math.round(startY);
-//		TiledMapTileLayer layer = (TiledMapTileLayer)tiledMap.getLayers().get("Walls Layer");
+//		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
 //
 //		rectPool.freeAll(tiles);
 //		tiles.clear();

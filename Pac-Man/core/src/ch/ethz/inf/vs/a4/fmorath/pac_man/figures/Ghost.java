@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.fmorath.pac_man.characters;
+package ch.ethz.inf.vs.a4.fmorath.pac_man.figures;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -8,19 +8,19 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import ch.ethz.inf.vs.a4.fmorath.pac_man.Map;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 
 /**
  * Created by linus on 04.12.2016.
  */
 
-public class Ghost extends Character {
+public class Ghost extends Figure {
 
-    public static final Color BLINKY = new Color(255/255f, 95/255f,  95/255f,  1);
-    public static final Color PINKY  = new Color(255/255f, 184/255f, 255/255f, 1);
-    public static final Color INKY   = new Color(1/255f,   255/255f, 255/255f, 1);
-    public static final Color CLYDE  = new Color(255/255f, 184/255f, 81/255f,  1);
+    public static final Color BLINKY = new Color(255/255f, 0/255f,   0/255f,   1);
+    public static final Color PINKY  = new Color(255/255f, 184/255f, 222/255f, 1);
+    public static final Color INKY   = new Color(0/255f,   255/255f, 222/255f, 1);
+    public static final Color CLYDE  = new Color(255/255f, 184/255f, 71/255f,  1);
 
     private Color color;
     private Sprite currentSprite;
@@ -56,8 +56,8 @@ public class Ghost extends Character {
         }
     }
 
-    public Ghost(Map map, int x, int y, Color color) {
-        super(map, x, y);
+    public Ghost(Player player, Round round, int x, int y, Color color) {
+        super(player, round, x, y);
         this.color = color;
         this.setWidth(currentSprite.getWidth());
         this.setHeight(currentSprite.getHeight());

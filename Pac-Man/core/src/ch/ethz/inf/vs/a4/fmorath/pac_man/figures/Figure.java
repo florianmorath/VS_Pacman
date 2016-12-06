@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a4.fmorath.pac_man.characters;
+package ch.ethz.inf.vs.a4.fmorath.pac_man.figures;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -8,14 +8,15 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
-import ch.ethz.inf.vs.a4.fmorath.pac_man.Map;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 
 /**
  * Created by linus on 04.12.2016.
  */
 
-public abstract class Character extends Actor {
+public abstract class Figure extends Actor {
 
     protected static final int CORNER_TOLERANCE = 5;
     protected static final float FRAME_DURATION = 0.05f;
@@ -23,7 +24,8 @@ public abstract class Character extends Actor {
 
     protected MovementDirection currentDirection = MovementDirection.NONE;
     protected float elapsedTime = 0f;
-    protected Map map;
+    protected Player player;
+    protected Round round;
 
     protected abstract void initAnimations();
     protected abstract void updateRepresentation();
@@ -32,8 +34,9 @@ public abstract class Character extends Actor {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
 
-    public Character(Map map, int x, int y) {
-        this.map = map;
+    public Figure(Player player, Round round, int x, int y) {
+        this.player = player;
+        this.round = round;
         this.setPosition(x, y);
         initAnimations();
         // TODO: Only set input processor if this is the local player's character
@@ -61,7 +64,7 @@ public abstract class Character extends Actor {
         position.y = (position.y + halfHeight + viewportHeight) % viewportHeight - halfHeight;
 
         Rectangle player = new Rectangle(position.x, position.y, this.getWidth(), this.getHeight());
-        for (Rectangle wall : map.getWalls()) {
+        for (Rectangle wall : round.getWalls()) {
             if (Intersector.overlaps(wall, player)) {
                 if (direction.x != 0) {
                     if (Math.abs(wall.y + wall.height - position.y) < CORNER_TOLERANCE)

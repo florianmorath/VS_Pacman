@@ -20,6 +20,11 @@ public class LobbyActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         Game game = new Game();
         game.addPlayer(new Player(game, "Linus", true));

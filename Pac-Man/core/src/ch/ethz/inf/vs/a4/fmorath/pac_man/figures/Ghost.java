@@ -7,6 +7,10 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
+
+import org.w3c.dom.css.Rect;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
@@ -22,6 +26,7 @@ public class Ghost extends Figure {
     public static final Color INKY   = new Color(0/255f,   255/255f, 222/255f, 1);
     public static final Color CLYDE  = new Color(255/255f, 184/255f, 71/255f,  1);
 
+    private PacMan pacMan;
     private Color color;
     private Sprite currentSprite;
     private Sprite spriteUp, spriteRight, spriteDown, spriteLeft;
@@ -56,12 +61,31 @@ public class Ghost extends Figure {
         }
     }
 
-    public Ghost(Player player, Round round, int x, int y, Color color) {
-        super(player, round, x, y);
+    public Ghost(Round round, int x, int y, PacMan pacMan, Color color) {
+        super(round, x, y);
+        this.pacMan = pacMan;
         this.color = color;
         this.setWidth(currentSprite.getWidth());
         this.setHeight(currentSprite.getHeight());
         this.setPosition(x, y);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (intersects(pacMan))
+            round.end();
+    }
+
+    private boolean intersects(PacMan pacMan) {
+        Rectangle r1 = getRectangle();
+        Rectangle r2 = pacMan.getRectangle();
+        Rectangle intersection = new Rectangle();
+        intersection.x = Math.max(r1.x, r2.x);
+        intersection.setWidth(Math.min(r1.x + r1.width, r2.x + r2.width) - intersection.x);
+        intersection.y = Math.max(r1.y, r2.y);
+        intersection.setHeight(Math.min(r1.y + r1.height, r2.y + r2.height) - intersection.y);
+        return intersection.width >= r2.width / 2 && intersection.height >= r2.height / 2;
     }
 
     @Override

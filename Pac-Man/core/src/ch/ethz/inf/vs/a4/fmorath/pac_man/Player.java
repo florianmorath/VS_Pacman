@@ -9,6 +9,11 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
 public class Player {
 
     private Game game;
+    private String name;
+    private boolean isLocalPlayer;
+    public boolean isLocalPlayer() {
+        return isLocalPlayer;
+    }
 
     private Figure figure;
     public Figure getFigure() {
@@ -16,22 +21,27 @@ public class Player {
     }
     public void setFigure(Figure figure) {
         this.figure = figure;
+        figure.setPlayer(this);
     }
 
     private int score = 0;
     public int getScore() {
         return score;
     }
-    public void resetScore(int score) {
-        this.score = 0;
-    }
     public void increaseScore(int amount) {
         score += amount;
-        if (score > game.getHighscore())
-            game.setHighscore(score);
+        if (score > game.getHighScore())
+            game.setHighScore(score);
     }
 
-    public Player(Game game) {
+    public Player(Game game, String name, boolean isLocalPlayer) {
         this.game = game;
+        this.name = name;
+        this.isLocalPlayer = isLocalPlayer;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

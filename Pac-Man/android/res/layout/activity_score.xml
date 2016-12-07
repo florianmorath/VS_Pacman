@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_lobby"
+    android:id="@+id/activity_score"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="ch.ethz.inf.vs.a4.fmorath.pac_man.activities.LobbyActivity">
+    tools:context="ch.ethz.inf.vs.a4.fmorath.pac_man.activities.ScoreActivity">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_vertical_margin"
-        android:text="@string/text_title_lobby"
+        android:text="@string/text_title_score"
         android:textSize="24sp"
         android:gravity="center"/>
 
@@ -21,7 +21,7 @@
         android:layout_weight="1">
 
         <ListView
-            android:id="@+id/player_list"
+            android:id="@+id/score_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -30,21 +30,12 @@
     </RelativeLayout>
 
     <Button
-        android:id="@+id/button_start"
+        android:id="@+id/button_main_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_vertical_margin"
-        android:text="@string/button_start"
+        android:text="@string/button_main_menu"
         android:padding="24dp"
-        android:onClick="onStartButtonClick"/>
-
-    <TextView
-        android:id="@+id/text_waiting_for_host"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_vertical_margin"
-        android:text="@string/text_waiting_for_host"
-        android:gravity="center"
-        android:padding="24dp"/>
+        android:onClick="onMainMenuButtonClick"/>
 
 </LinearLayout>

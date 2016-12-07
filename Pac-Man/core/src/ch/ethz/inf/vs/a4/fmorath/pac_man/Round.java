@@ -35,7 +35,17 @@ public class Round extends Stage {
     private final int largeCoinsCollisionLayerId = 6;
 
     private Game game;
-    private Player[] players;
+    private int roundNumber;
+    private Array<Player> players;
+
+    PacMan pacMan = new PacMan(this, 104, 52);
+    Figure[] figures = new Figure[]{
+            pacMan,
+            new Ghost (this, 104, 148, pacMan, Ghost.BLINKY),
+            new Ghost (this, 104, 124, pacMan, Ghost.PINKY),
+            new Ghost (this, 88, 124, pacMan, Ghost.INKY),
+            new Ghost (this, 120, 124, pacMan, Ghost.CLYDE)
+    };
 
     private TiledMap map;
     private Array<Rectangle> walls = new Array<Rectangle>();
@@ -51,9 +61,10 @@ public class Round extends Stage {
         return collectibles;
     }
 
-    public Round(Game game, Viewport viewport, TiledMap map, Player... players) {
+    public Round(Game game, int roundNumber, Viewport viewport, TiledMap map, Array<Player> players) {
         super(viewport);
         this.game = game;
+        this.roundNumber = roundNumber;
         this.map = map;
         this.players = players;
 
@@ -66,17 +77,11 @@ public class Round extends Stage {
         initWalls();
         initCollectibles();
 
-        // TODO: Set figures for players based on round number
-        Figure[] figures = new Figure[5];
-        figures[0] = new Ghost (players[1], this, 104, 148, Ghost.BLINKY);
-        figures[1] = new Ghost (players[2], this, 104, 124, Ghost.PINKY);
-        figures[2] = new Ghost (players[3], this, 88,  124, Ghost.INKY);
-        figures[3] = new Ghost (players[4], this, 120, 124, Ghost.CLYDE);
-        figures[4] = new PacMan(players[0], this, 104, 52);
-
-        for (int i = 0; i < players.length; i++) {
-            players[i].setFigure(figures[i]);
-            this.addActor(figures[i]);
+        int i = roundNumber;
+        for (Player player : players) {
+            player.setFigure(figures[i]);
+            addActor(figures[i]);
+            i = (i + 1) % players.size;
         }
     }
 
@@ -85,10 +90,14 @@ public class Round extends Stage {
         super.draw();
         Batch batch = getBatch();
         batch.begin();
-        font.draw(batch, "HIGH SCORE",                            113, 271, 0, 1, false);
-        font.draw(batch, Integer.toString(players[0].getScore()), 57,  262, 0, 2, false);
-        font.draw(batch, Integer.toString(game.getHighscore()),   137, 262, 0, 2, false);
+        font.draw(batch, "HIGH SCORE",                                          113, 271, 0, 1, false);
+        font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 57,  262, 0, 2, false);
+        font.draw(batch, Integer.toString(game.getHighScore()),                 137, 262, 0, 2, false);
         batch.end();
+    }
+
+    public void end() {
+        game.endRound();
     }
 
     private void initWalls() {
@@ -100,7 +109,6 @@ public class Round extends Stage {
     private void initCollectibles() {
         TiledMapTileLayer smallCoinsLayer = (TiledMapTileLayer) map.getLayers().get(smallCoinsLayerId);
         MapLayer smallCoinsCollisionLayer = map.getLayers().get(smallCoinsCollisionLayerId);
-        int index = 0;
         for (RectangleMapObject rectangleMapObject : smallCoinsCollisionLayer.getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleMapObject.getRectangle();
             collectibles.add(new SmallCoin(collectibles, smallCoinsLayer, rectangle, (int) rectangle.getX() / 4, (int) rectangle.getY() / 4));

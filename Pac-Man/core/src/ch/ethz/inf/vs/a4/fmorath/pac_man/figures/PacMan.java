@@ -61,8 +61,8 @@ public class PacMan extends Figure {
         }
     }
 
-    public PacMan(Player player, Round round, int x, int y) {
-        super(player, round, x, y);
+    public PacMan(Round round, int x, int y) {
+        super(round, x, y);
         this.setWidth(currentAnimation.getKeyFrame(0).getRegionWidth());
         this.setHeight(currentAnimation.getKeyFrame(0).getRegionHeight());
     }

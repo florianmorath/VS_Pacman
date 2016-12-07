@@ -9,11 +9,11 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Client;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.ExampleHandler;
@@ -23,8 +23,11 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
 
 public class Game extends ApplicationAdapter {
 
-	private int screenWidth;
-	private int screenHeight;
+    private static Game instance;
+    public static Game getInstance() {
+        return instance;
+    }
+
 	private int worldWidth;
 	private int worldHeight;
 
@@ -33,17 +36,36 @@ public class Game extends ApplicationAdapter {
 
 	private OrthographicCamera camera;
 	private Viewport viewport;
-	private Round round;
 
-	private int highscore = 0;
+    private Array<Player> players = new Array<Player>();
+    public Array<Player> getPlayers() {
+        return players;
+    }
+    public void addPlayer(Player player) {
+        players.add(player);
+    }
+    public int getNumPlayers() {
+        return players.size;
+    }
 
-	public int getHighscore() {
-		return highscore;
+    private int roundNumber = 0;
+    private Round currentRound;
+    private boolean hasEnded = false;
+    public boolean hasEnded() {
+        return hasEnded;
+    }
+
+	private int highScore = 0;
+	public int getHighScore() {
+		return highScore;
+	}
+	public void setHighScore(int highScore) {
+		this.highScore = highScore;
 	}
 
-	public void setHighscore(int highscore) {
-		this.highscore = highscore;
-	}
+    public Game() {
+        Game.instance = this;
+    }
 
 	@Override
 	public void create () {
@@ -55,10 +77,6 @@ public class Game extends ApplicationAdapter {
 			e.printStackTrace();
 		}*/
 
-		screenWidth = Gdx.graphics.getWidth();
-		screenHeight = Gdx.graphics.getHeight();
-		float aspectRatio = screenHeight / (float)screenWidth;
-
 		map = new TmxMapLoader().load("map.tmx");
 		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
 		worldHeight = 4 * map.getProperties().get("height", Integer.class);
@@ -68,9 +86,7 @@ public class Game extends ApplicationAdapter {
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(worldWidth, worldHeight + 40, camera);
 
-		Player[] players = new Player[5];
-		Arrays.fill(players, new Player(this));
-		round = new Round(this, viewport, map, players);
+        startRound();
 	}
 
 	@Override
@@ -84,17 +100,15 @@ public class Game extends ApplicationAdapter {
 		mapRenderer.setView(camera);
 		mapRenderer.render();
 
-//		round.getBatch().setProjectionMatrix(camera.combined);
-		round.act(Gdx.graphics.getDeltaTime());
-		round.draw();
+		currentRound.act(Gdx.graphics.getDeltaTime());
+		currentRound.draw();
 
 //		WallCollisionDetection();
-
 	}
 
 	@Override
-	public void dispose () {
-		round.dispose();
+	public void dispose() {
+		currentRound.dispose();
 		map.dispose();
 	}
 
@@ -102,6 +116,17 @@ public class Game extends ApplicationAdapter {
     public void resize(int width, int height) {
         viewport.update(width, height, true);
     }
+
+    private void startRound() {
+        currentRound = new Round(this, roundNumber++, viewport, map, players);
+    }
+
+	public void endRound() {
+		if (roundNumber == getNumPlayers())
+            hasEnded = true;
+        else
+            startRound();
+	}
 
 //	private void WallCollisionDetection() {
 //
@@ -124,8 +149,8 @@ public class Game extends ApplicationAdapter {
 
 //	private void getTiles(float startX, float startY, float endX, float endY, Array<Rectangle> tiles) {
 //
-//		int startXX = Math.round(startX);
-//		int startYY = Math.round(startY);
+//		int startXX = Math.currentRound(startX);
+//		int startYY = Math.currentRound(startY);
 //		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
 //
 //		rectPool.freeAll(tiles);

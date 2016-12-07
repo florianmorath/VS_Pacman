@@ -10,6 +10,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.R;
 
 public class LobbyActivity extends Activity {
@@ -19,16 +21,15 @@ public class LobbyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
 
-        List<String> players = new ArrayList<>();
-        players.add("Linus");
-        players.add("Markus");
-        players.add("Johannes");
-        players.add("Stefan");
-        players.add("Florian");
-        players.add("Tiziano");
+        Game game = new Game();
+        game.addPlayer(new Player(game, "Linus", true));
+        game.addPlayer(new Player(game, "Markus", false));
+        game.addPlayer(new Player(game, "Johannes", false));
+        game.addPlayer(new Player(game, "Stefan", false));
+        game.addPlayer(new Player(game, "Florian", false));
 
         ListView listView = (ListView) findViewById(R.id.player_list);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.player_list_item, players);
+        ArrayAdapter<Player> arrayAdapter = new ArrayAdapter<>(this, R.layout.player_list_item, game.getPlayers().toArray());
         listView.setAdapter(arrayAdapter);
 
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);

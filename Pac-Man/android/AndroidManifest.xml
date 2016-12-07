@@ -30,6 +30,9 @@
             android:label="@string/app_name"
             android:theme="@style/GameTheme">
         </activity>
+        <activity android:name="ch.ethz.inf.vs.a4.fmorath.pac_man.activities.ScoreActivity">
+
+        </activity>
         <activity android:name="ch.ethz.inf.vs.a4.fmorath.pac_man.activities.SettingsActivity"
             android:theme="@style/PreferenceTheme" >
 

@@ -1,5 +1,6 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -12,6 +13,28 @@ public class GameActivity extends AndroidApplication {
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		initialize(new Game(), config);
+		final Game game = Game.getInstance();
+		initialize(game, config);
+
+		final Intent intent = new Intent(this, ScoreActivity.class);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (!game.hasEnded()) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				startActivity(intent);
+			}
+		}).start();
+	}
+
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+		// TODO: Disconnect client from server
 	}
 }

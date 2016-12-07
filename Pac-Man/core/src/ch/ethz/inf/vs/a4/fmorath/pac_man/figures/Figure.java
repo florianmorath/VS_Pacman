@@ -24,7 +24,14 @@ public abstract class Figure extends Actor {
 
     protected MovementDirection currentDirection = MovementDirection.NONE;
     protected float elapsedTime = 0f;
+
     protected Player player;
+    public void setPlayer(Player player) {
+        this.player = player;
+        if (player.isLocalPlayer())
+            Gdx.input.setInputProcessor(new GestureDetector(new MovementGestureAdapter()));
+    }
+
     protected Round round;
 
     protected abstract void initAnimations();
@@ -34,13 +41,10 @@ public abstract class Figure extends Actor {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
 
-    public Figure(Player player, Round round, int x, int y) {
-        this.player = player;
+    public Figure(Round round, int x, int y) {
         this.round = round;
         this.setPosition(x, y);
         initAnimations();
-        // TODO: Only set input processor if this is the local player's character
-        Gdx.input.setInputProcessor(new GestureDetector(new MovementGestureAdapter()));
     }
 
     @Override
@@ -104,7 +108,6 @@ public abstract class Figure extends Actor {
     }
 
     private class MovementGestureAdapter extends GestureDetector.GestureAdapter {
-
         @Override
         public boolean fling(float velocityX, float velocityY, int button) {
             if (Math.abs(velocityX) >= Math.abs(velocityY)) {

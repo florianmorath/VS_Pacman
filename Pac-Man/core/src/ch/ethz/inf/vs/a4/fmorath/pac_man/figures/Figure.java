@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
 
 /**
  * Created by linus on 04.12.2016.
@@ -51,7 +52,6 @@ public abstract class Figure extends Actor {
     public void act(float delta) {
         move(delta);
     }
-
     private void move(float delta) {
         float distance = SPEED * delta;
         Vector2 direction = currentDirection.getVector();

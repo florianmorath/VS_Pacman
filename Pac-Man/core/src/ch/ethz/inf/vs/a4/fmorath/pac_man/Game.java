@@ -181,9 +181,21 @@ public class Game extends ApplicationAdapter {
 		ExampleHandler client1Handler = new ExampleHandler("Client1");
 		ExampleHandler client2Handler = new ExampleHandler("Client2");
 
-		Server server = new Server(serverHandler);
-		final Client client1 = new Client(client1Handler);
-		final Client client2 = new Client(client2Handler);
+		Server server = new Server();
+		server.setPlayerActionHandler(serverHandler);
+		server.setStartSignalHandler(serverHandler);
+		server.setStopSignalHandler(serverHandler);
+
+		final Client client1 = new Client();
+		server.setPlayerActionHandler(client1Handler);
+		server.setStartSignalHandler(client1Handler);
+		server.setStopSignalHandler(client1Handler);
+
+
+		final Client client2 = new Client();
+		server.setPlayerActionHandler(client2Handler);
+		server.setStartSignalHandler(client2Handler);
+		server.setStopSignalHandler(client2Handler);
 
 		server.start();
 		new Thread(new Runnable(){

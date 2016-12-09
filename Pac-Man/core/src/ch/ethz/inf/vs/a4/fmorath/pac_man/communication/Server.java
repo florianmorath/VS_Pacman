@@ -20,24 +20,22 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 /**
  * Server for the Pac Man game communication protocol.
  */
-public class Server implements CommunicationConstants{
+public class Server extends CommunicationEntity implements CommunicationConstants{
     private final List<Socket> clients;
     private final List<SendingQueue> sendingQueues;
     private boolean gameStarted;
     private boolean gameStopped;
-    private final PlayerActionHandler handler;
 
     /**
      * Constructor.
-     * @param handler The handler that reacts to messages from the Network.
      */
-    public Server(PlayerActionHandler handler){
+    public Server(){
         gameStarted = false;
         gameStopped = false;
         clients = new ArrayList<Socket>();
-        this.handler = handler;
         this.sendingQueues = new ArrayList<SendingQueue>();
     }
+
 
     /**
      * Asynchronously start server: Start a new Thread that waits for the clients to connect, until the "gameStarted" flag is set.
@@ -70,7 +68,7 @@ public class Server implements CommunicationConstants{
         for(Socket s: clients){
             try {
                 GameCommunicator.sendStopSignal(new DataOutputStream(s.getOutputStream()));
-                this.handler.receivedStopSignal();
+                notifyStopHandler();
             } catch (IOException e) {
                 e.printStackTrace(); //Todo: add proper exception handling.
             }
@@ -112,7 +110,7 @@ public class Server implements CommunicationConstants{
         startSendingLoops();
         try {
             sendStartSignalToAllClients();
-            this.handler.receivedStartSignal();
+            notifyStartHandler();
         } catch (IOException e) {
             e.printStackTrace(); //Todo: add proper exception handling.
         }
@@ -226,12 +224,4 @@ public class Server implements CommunicationConstants{
         }
     }
 
-    /**
-     * Method used to notify handler about received action.
-     * For now it is only calling the updatePlayerFigure method but it might be useful to implement additional logic.
-     * @param action The action received from the network.
-     */
-    private void notifyHandler(PlayerAction action){
-        this.handler.updatePlayerFigure(action);
-    }
 }

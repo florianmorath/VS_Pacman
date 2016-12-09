@@ -1,6 +1,5 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
 
-import com.badlogic.gdx.Gdx;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -56,7 +55,7 @@ class SendingQueue implements CommunicationConstants{
                 @Override
                 public void run() {
 
-                    Gdx.app.log(LOGGING_TAG, "Starting queue thread.");
+                    //Gdx.app.log(LOGGING_TAG, "Starting queue thread.");
                     while (!stopped) {
                         PlayerAction action = null;
                         synchronized (SendingQueue.this) {
@@ -81,7 +80,7 @@ class SendingQueue implements CommunicationConstants{
                             }
                         }
                     }
-                    Gdx.app.log(LOGGING_TAG, "Stopping queue thread.");
+                    //Gdx.app.log(LOGGING_TAG, "Stopping queue thread.");
                 }
             });
         }

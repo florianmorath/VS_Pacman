@@ -11,10 +11,10 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
  * Todo: make fields public or write getters/setters if this class should be used by other parts of the game.
  */
 public class PlayerAction {
-    final int playerId;
-    final float positionX;
-    final float positionY;
-    final MovementDirection newDirection;
+    public final int playerId;
+    public final float positionX;
+    public final float positionY;
+    public final MovementDirection newDirection;
 
     /**
      * Constructor.

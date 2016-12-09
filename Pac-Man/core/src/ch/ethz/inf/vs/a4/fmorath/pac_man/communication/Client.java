@@ -1,14 +1,11 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
 
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Net;
-import com.badlogic.gdx.net.SocketHints;
-import com.badlogic.gdx.net.Socket;
-
+//import java.net.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 
 /**
  * Created by johannes on 22.11.16.
@@ -60,12 +57,17 @@ public class Client extends CommunicationEntity implements CommunicationConstant
      * @param serverAddress Ip-Address or hostname of the server.
      */
     private void connectToServer(String serverAddress) {
-        SocketHints hints = new SocketHints();
-        socket = Gdx.net.newClientSocket(Net.Protocol.TCP, serverAddress,SERVER_PORT, hints);
-        in = new DataInputStream(socket.getInputStream());
-        out = new DataOutputStream(socket.getOutputStream());
-        sendingQueue = new SendingQueue(out);
-        sendingQueue.startSendingLoop();
+        //SocketHints hints = new SocketHints();
+        try {
+            socket = new Socket(serverAddress, SERVER_PORT);//Gdx.net.newClientSocket(Net.Protocol.TCP, serverAddress,SERVER_PORT, hints);
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+            sendingQueue = new SendingQueue(out);
+            sendingQueue.startSendingLoop();
+        }catch(IOException ex){
+            //Todo: Exception handling.
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -79,9 +81,9 @@ public class Client extends CommunicationEntity implements CommunicationConstant
             @Override
             public void run() {
 
-                Gdx.app.log(LOGGING_TAG,"Started receive thread [Client].");
-                DataInputStream dataIn = new DataInputStream(socket.getInputStream());
+                DataInputStream dataIn;
                 try {
+                    dataIn = new DataInputStream(socket.getInputStream());
                     boolean stopped = false;
                     while(!stopped) {
                         PlayerAction action = GameCommunicator.receiveAction(dataIn);
@@ -98,7 +100,7 @@ public class Client extends CommunicationEntity implements CommunicationConstant
                     e.printStackTrace();
                     //TODO: Add proper exception handling
                 }
-                Gdx.app.log(LOGGING_TAG,"Stopping receive thread [Client].");
+                //Gdx.app.log(LOGGING_TAG,"Stopping receive thread [Client].");
 
             }
         }).start();

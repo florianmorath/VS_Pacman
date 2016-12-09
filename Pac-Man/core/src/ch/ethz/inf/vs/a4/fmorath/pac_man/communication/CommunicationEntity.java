@@ -4,10 +4,12 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
  * Created by johannes on 09.12.16.
  */
 
+import java.io.IOException;
+
 /**
  * A communication node (either Server or client) that notifies its handlers about communication events.
  */
-public class CommunicationEntity {
+abstract public class CommunicationEntity {
 
     private PlayerActionHandler actionHandler;
     private StartSignalHandler startSignalHandler;
@@ -62,4 +64,6 @@ public class CommunicationEntity {
         if(startSignalHandler != null)
             startSignalHandler.receivedStartSignal();
     }
+
+    abstract public void send(PlayerAction action) throws IOException;
 }

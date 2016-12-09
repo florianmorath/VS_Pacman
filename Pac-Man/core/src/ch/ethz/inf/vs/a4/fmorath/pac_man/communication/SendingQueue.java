@@ -15,7 +15,7 @@ import java.util.Queue;
  * This is achieved by starting a sending thread. This threads waits for the queue to be filled (concurrently) by other threads.
  * As soon as there are elements in the queue, the sending thread starts sending them over the network.
  */
-class SendingQueue implements CommunicationConstants{
+class SendingQueue{
     private final DataOutputStream stream;
     private final Queue<PlayerAction> outQueue;
     private Thread thread;
@@ -80,7 +80,6 @@ class SendingQueue implements CommunicationConstants{
                             }
                         }
                     }
-                    //Gdx.app.log(LOGGING_TAG, "Stopping queue thread.");
                 }
             });
         }

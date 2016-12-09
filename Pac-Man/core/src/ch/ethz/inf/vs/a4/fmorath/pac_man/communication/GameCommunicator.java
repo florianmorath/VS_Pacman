@@ -16,7 +16,7 @@ import java.io.OutputStream;
 /**
  * Class that provides the communication Protocol.
  */
-abstract class GameCommunicator implements CommunicationConstants{
+abstract class GameCommunicator{
     /**
      * Send an user action to a player.
      * @param stream Output stream to the socket of the player

@@ -11,9 +11,23 @@ import java.io.IOException;
  */
 abstract public class CommunicationEntity {
 
+    private int communicationPort;
+
     private PlayerActionHandler actionHandler;
     private StartSignalHandler startSignalHandler;
     private StopSignalHandler stopSignalHandler;
+
+    public CommunicationEntity(int communicationPort){
+        this.communicationPort = communicationPort;
+    }
+
+    /**
+     * Get the communication port
+     * @return
+     */
+    public int getPort(){
+        return communicationPort;
+    }
 
     /**
      * Setter for start signal handler

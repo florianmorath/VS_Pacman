@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Server for the Pac Man game communication protocol.
  */
-public class Server extends CommunicationEntity implements CommunicationConstants{
+public class Server extends CommunicationEntity{
     private final List<Socket> clients;
     private final List<SendingQueue> sendingQueues;
     private boolean gameStarted;
@@ -24,7 +24,8 @@ public class Server extends CommunicationEntity implements CommunicationConstant
     /**
      * Constructor.
      */
-    public Server(){
+    public Server(int port){
+        super(port);
         gameStarted = false;
         gameStopped = false;
         clients = new ArrayList<Socket>();
@@ -124,7 +125,7 @@ public class Server extends CommunicationEntity implements CommunicationConstant
      */
     private void waitForNewClients() throws IOException {
 
-        ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+        ServerSocket serverSocket = new ServerSocket(getPort());
         serverSocket.setSoTimeout(3000);
 
         // Loop until game starts.

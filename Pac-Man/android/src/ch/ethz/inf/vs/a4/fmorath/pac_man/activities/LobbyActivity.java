@@ -54,14 +54,14 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
         if (isHost) {
             findViewById(R.id.text_waiting_for_host).setVisibility(View.GONE);
-            server = new Server();
+            server = new Server(Integer.getInteger(prefs.getString("host_port","8978"),8978));
             server.setStartSignalHandler(this);
             game.setCommunicator(server);
             server.start();
         }
         else {
             findViewById(R.id.button_start).setVisibility(View.GONE);
-            client = new Client();
+            client = new Client(Integer.getInteger(prefs.getString("join_port","8978"),8978));
             client.setStartSignalHandler(this);
             game.setCommunicator(client);
                 new Thread(new Runnable(){

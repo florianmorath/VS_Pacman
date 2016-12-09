@@ -14,7 +14,7 @@ import java.net.Socket;
 /**
  * Client class for the Pac Man game communication protocol.
  */
-public class Client extends CommunicationEntity implements CommunicationConstants{
+public class Client extends CommunicationEntity {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -23,7 +23,8 @@ public class Client extends CommunicationEntity implements CommunicationConstant
     /**
      * Constructor.
      */
-    public Client(){
+    public Client(int port){
+        super(port);
         this.socket = null;
         this.sendingQueue = null;
     }
@@ -59,7 +60,7 @@ public class Client extends CommunicationEntity implements CommunicationConstant
     private void connectToServer(String serverAddress) {
         //SocketHints hints = new SocketHints();
         try {
-            socket = new Socket(serverAddress, SERVER_PORT);//Gdx.net.newClientSocket(Net.Protocol.TCP, serverAddress,SERVER_PORT, hints);
+            socket = new Socket(serverAddress, getPort());//Gdx.net.newClientSocket(Net.Protocol.TCP, serverAddress,SERVER_PORT, hints);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
             sendingQueue = new SendingQueue(out);

@@ -70,11 +70,12 @@ abstract class GameCommunicator implements CommunicationConstants{
      * @param stream Start signal is written to this stream.
      * @throws IOException
      */
-    public static void sendStartSignal(DataOutputStream stream) throws IOException{
+    public static void sendStartSignal(DataOutputStream stream, int playerId, int numPlayers) throws IOException{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        stream.writeByte(1);
+        stream.writeByte(playerId);
+        stream.writeByte(numPlayers);
     }
 
     /**
@@ -82,10 +83,13 @@ abstract class GameCommunicator implements CommunicationConstants{
      * @param stream Start signal will be written to this stream by server.
      * @throws IOException
      */
-    public static void waitForStartSignal(DataInputStream stream) throws IOException{
+    public static int[] waitForStartSignal(DataInputStream stream) throws IOException{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        stream.readByte();
+        int myId = stream.readByte();
+        int numPlayers = stream.readByte();
+        int[] res = {myId, numPlayers};
+        return res;
     }
 }

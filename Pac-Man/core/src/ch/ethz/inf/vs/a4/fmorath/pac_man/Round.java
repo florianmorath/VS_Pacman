@@ -34,9 +34,10 @@ public class Round extends Stage {
     private final int largeCoinsLayerId = 5;
     private final int largeCoinsCollisionLayerId = 6;
 
-    private Game game;
+    public Game game;
     private int roundNumber;
     private Array<Player> players;
+
 
     PacMan pacMan = new PacMan(this, 104, 52);
     Figure[] figures = new Figure[]{

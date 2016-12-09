@@ -8,20 +8,37 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.io.IOException;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Client;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.ExampleHandler;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.CommunicationEntity;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerActionHandler;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
 
 
-public class Game extends ApplicationAdapter {
+public class Game extends ApplicationAdapter implements PlayerActionHandler{
+
+
+	private boolean isServer = false;
+	public CommunicationEntity communicator;
+	public void setCommunicator(Server server){
+		communicator = server;
+		isServer = true;
+	}
+	public void setCommunicator(Client client){
+		this.communicator = client;
+
+	}
+
+	public boolean getIsServer(){
+		return isServer;
+	}
 
     private static Game instance;
     public static Game getInstance() {
@@ -85,8 +102,8 @@ public class Game extends ApplicationAdapter {
 
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(worldWidth, worldHeight + 40, camera);
-
-        startRound();
+		this.communicator.setPlayerActionHandler(this);
+		startRound();
 	}
 
 	@Override
@@ -171,72 +188,15 @@ public class Game extends ApplicationAdapter {
 //		}
 //	}
 
-	/**
-	 * TODO: Remove this method. Only for Demonstration purposes how to use the communication protocol.
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public void testCommunication() throws IOException, InterruptedException {
-		ExampleHandler serverHandler = new ExampleHandler("Server");
-		ExampleHandler client1Handler = new ExampleHandler("Client1");
-		ExampleHandler client2Handler = new ExampleHandler("Client2");
 
-		Server server = new Server();
-		server.setPlayerActionHandler(serverHandler);
-		server.setStartSignalHandler(serverHandler);
-		server.setStopSignalHandler(serverHandler);
-
-		final Client client1 = new Client();
-		server.setPlayerActionHandler(client1Handler);
-		server.setStartSignalHandler(client1Handler);
-		server.setStopSignalHandler(client1Handler);
-
-
-		final Client client2 = new Client();
-		server.setPlayerActionHandler(client2Handler);
-		server.setStartSignalHandler(client2Handler);
-		server.setStopSignalHandler(client2Handler);
-
-		server.start();
-		new Thread(new Runnable(){
-
-			@Override
-			public void run() {
-				try {
-					client1.connectAndStartGame("localhost");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+	@Override
+	public void updatePlayerFigure(PlayerAction action) {
+		for(Player p: players){
+			if(!p.isLocalPlayer() && p.getPlayerId() == action.playerId){
+				while(p.getFigure().positionChangeAvailable()){}
+				p.getFigure().setDirPos(action.newDirection, new Vector2(action.positionX,action.positionY));
 			}
-		}).start();
-		new Thread(new Runnable(){
+		}
 
-			@Override
-			public void run() {
-				try {
-					client2.connectAndStartGame("localhost");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-
-		Thread.sleep(5000);
-		server.startGame();
-		Thread.sleep(3000);
-		server.send(new PlayerAction(0, 0, 0, MovementDirection.UP));
-		client1.send(new PlayerAction(2, 20, 0, MovementDirection.UP));
-		client1.send(new PlayerAction(2, 21, 0, MovementDirection.UP));
-		Thread.sleep(100);
-		server.send(new PlayerAction(0, 1, 0, MovementDirection.UP));
-		client1.send(new PlayerAction(1, 10, 0, MovementDirection.UP));
-		server.send(new PlayerAction(0, 2, 0, MovementDirection.UP));
-		Thread.sleep(20);
-		client1.send(new PlayerAction(1, 11, 0, MovementDirection.UP));
-		client1.send(new PlayerAction(1, 12, 0, MovementDirection.UP));
-		client1.send(new PlayerAction(2, 22, 0, MovementDirection.UP));
-		server.send(new PlayerAction(0, 3, 0, MovementDirection.UP));
-		Thread.sleep(500);
-		server.stop();
 	}
 }

@@ -110,7 +110,7 @@ public class Server extends CommunicationEntity implements CommunicationConstant
         startSendingLoops();
         try {
             sendStartSignalToAllClients();
-            notifyStartHandler();
+            notifyStartHandler(0,clients.size()+1);
         } catch (IOException e) {
             e.printStackTrace(); //Todo: add proper exception handling.
         }
@@ -217,8 +217,9 @@ public class Server extends CommunicationEntity implements CommunicationConstant
      * @throws IOException
      */
     private void sendStartSignalToAllClients() throws IOException {
-        for(Socket s: clients){
-            GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()));
+        for(int i=0;i<clients.size();++i){
+            Socket s = clients.get(i);
+            GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()),i+1,clients.size()+1);
         }
     }
 

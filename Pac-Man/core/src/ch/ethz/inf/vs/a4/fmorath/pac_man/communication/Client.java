@@ -38,8 +38,8 @@ public class Client extends CommunicationEntity implements CommunicationConstant
     public void connectAndStartGame(String serverAddress) throws IOException {
         connectToServer(serverAddress);
         startReceiveActionLoop();
-        GameCommunicator.waitForStartSignal(in);
-        notifyStartHandler();
+        int[] res =GameCommunicator.waitForStartSignal(in);
+        notifyStartHandler(res[0],res[1]);
 
     }
 

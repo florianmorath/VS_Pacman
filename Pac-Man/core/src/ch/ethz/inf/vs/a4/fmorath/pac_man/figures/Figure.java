@@ -8,10 +8,14 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
+import java.io.IOException;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.CommunicationEntity;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
 
 /**
  * Created by linus on 04.12.2016.
@@ -23,6 +27,8 @@ public abstract class Figure extends Actor {
     protected static final float FRAME_DURATION = 0.05f;
     private static final float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
 
+    private Vector2 newPosition = null;
+    private MovementDirection newDirection = MovementDirection.NONE;
     protected MovementDirection currentDirection = MovementDirection.NONE;
     protected float elapsedTime = 0f;
 
@@ -35,8 +41,20 @@ public abstract class Figure extends Actor {
 
     protected Round round;
 
+
     protected abstract void initAnimations();
     protected abstract void updateRepresentation();
+
+    public void setDirPos(MovementDirection newDirection,Vector2 position){
+        synchronized (this){
+            this.newDirection = newDirection;
+            this.newPosition = position;
+        }
+    }
+
+    public boolean positionChangeAvailable(){
+        return newPosition != null && newDirection != MovementDirection.NONE;
+    }
 
     public Rectangle getRectangle() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
@@ -54,8 +72,18 @@ public abstract class Figure extends Actor {
     }
     private void move(float delta) {
         float distance = SPEED * delta;
-        Vector2 direction = currentDirection.getVector();
         Vector2 position = new Vector2(getX(), getY());
+        if (positionChangeAvailable()) {
+
+            synchronized (this) {
+                position = newPosition;
+                currentDirection = newDirection;
+
+                newPosition = null;
+                newDirection = MovementDirection.NONE;
+            }
+        }
+        Vector2 direction = currentDirection.getVector();
         position = position.add(direction.scl(distance));
 
         float viewportWidth = getStage().getCamera().viewportWidth;
@@ -110,25 +138,36 @@ public abstract class Figure extends Actor {
     private class MovementGestureAdapter extends GestureDetector.GestureAdapter {
         @Override
         public boolean fling(float velocityX, float velocityY, int button) {
+            MovementDirection detectedDirection;
             if (Math.abs(velocityX) >= Math.abs(velocityY)) {
                 // X dominated
                 if (velocityX >= 0) {
                     // Right fling
-                    currentDirection = MovementDirection.RIGHT;
+                    detectedDirection = MovementDirection.RIGHT;
                 } else {
                     // Left fling
-                    currentDirection = MovementDirection.LEFT;
+                    detectedDirection = MovementDirection.LEFT;
                 }
             } else {
                 // Y dominated
                 if (velocityY >= 0) {
                     //Down fling
-                    currentDirection = MovementDirection.DOWN;
+                    detectedDirection = MovementDirection.DOWN;
                 } else {
                     // Up fling
-                    currentDirection = MovementDirection.UP;
+                    detectedDirection = MovementDirection.UP;
                 }
             }
+            int id = 1;
+            if(round.game.getIsServer())
+                id = 0;
+            PlayerAction action = new PlayerAction(id, getX(), getY(), detectedDirection);
+            try {
+                round.game.communicator.send(action);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            currentDirection = detectedDirection;
             updateRepresentation();
 
             return true;

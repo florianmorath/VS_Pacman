@@ -20,9 +20,13 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.StartSignalHandler;
 
 public class LobbyActivity extends Activity implements StartSignalHandler  {
 
-    Server server;
-    Client client;
+    Server server = null;
+    Client client = null;
     Game game;
+
+    boolean started = false;
+
+    ArrayAdapter<Player> arrayAdapter;
 
     SharedPreferences prefs;
 
@@ -32,36 +36,30 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        game = new Game();
+
+        ListView listView = (ListView) findViewById(R.id.player_list);
+        arrayAdapter = new ArrayAdapter<>(this, R.layout.player_list_item, game.getPlayers().toArray());
+        listView.setAdapter(arrayAdapter);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        game = new Game();
-/*
-        game.addPlayer(new Player(game, "Linus", true));
-        game.addPlayer(new Player(game, "Markus", false));
-        game.addPlayer(new Player(game, "Johannes", false));
-        game.addPlayer(new Player(game, "Stefan", false));
-        game.addPlayer(new Player(game, "Florian", false));
-*/
-
-        ListView listView = (ListView) findViewById(R.id.player_list);
-        ArrayAdapter<Player> arrayAdapter = new ArrayAdapter<>(this, R.layout.player_list_item, game.getPlayers().toArray());
-        listView.setAdapter(arrayAdapter);
-
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
         if (isHost) {
             findViewById(R.id.text_waiting_for_host).setVisibility(View.GONE);
-            server = new Server(Integer.getInteger(prefs.getString("host_port","8978"),8978));
+            server = new Server(Integer.parseInt(prefs.getString("host_port","8978")), prefs.getString("username","Jim"));
             server.setStartSignalHandler(this);
             game.setCommunicator(server);
             server.start();
         }
         else {
             findViewById(R.id.button_start).setVisibility(View.GONE);
-            client = new Client(Integer.getInteger(prefs.getString("join_port","8978"),8978));
+            String portString = prefs.getString("join_port","8978");
+            client = new Client(Integer.parseInt(portString), prefs.getString("username","Jim"));
             client.setStartSignalHandler(this);
             game.setCommunicator(client);
                 new Thread(new Runnable(){
@@ -81,18 +79,40 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
         }
     }
 
+    /*
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(server != null && !started){
+            server.stop();
+            server = null;
+        }
 
+        client = null;
+
+    } */
 
     public void onStartButtonClick(View view) {
         server.startGame();
     }
 
     @Override
-    public void receivedStartSignal(int id, int numPlayers) {
-        for(int i=0; i<numPlayers;++i){
-            game.addPlayer(new Player(game, "Player " + i, i == id, i ));
-        }
+    public void receivedStartSignal() {
+
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void receivedNewPlayer(String name, int id, boolean isLocal) {
+        game.addPlayer(new Player(game, name, isLocal, id));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ListView listView = (ListView) findViewById(R.id.player_list);
+                arrayAdapter = new ArrayAdapter<Player>(LobbyActivity.this, R.layout.player_list_item, game.getPlayers().toArray());
+                listView.setAdapter(arrayAdapter);
+            }
+        });
     }
 }

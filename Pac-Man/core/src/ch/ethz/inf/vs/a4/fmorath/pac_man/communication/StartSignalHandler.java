@@ -9,5 +9,8 @@ public interface StartSignalHandler {
      * This function will be called, when the start signal was received.
      * Note that it will also be called by the server, when it sends start signals to all other players.
      */
-    void receivedStartSignal(int myPlayerId, int numPlayers);
+    void receivedStartSignal();
+
+    void receivedNewPlayer(String name, int id, boolean isLocal);
+
 }

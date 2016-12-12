@@ -17,6 +17,18 @@ import java.io.OutputStream;
  * Class that provides the communication Protocol.
  */
 abstract class GameCommunicator{
+    public static class NameIdStart{
+        public final String name;
+        public final int id;
+        public final boolean started;
+        public NameIdStart(String name, int id, boolean started){
+            this.name = name;
+            this.id = id;
+            this.started = started;
+        }
+    }
+
+
     /**
      * Send an user action to a player.
      * @param stream Output stream to the socket of the player
@@ -65,12 +77,71 @@ abstract class GameCommunicator{
         stream.writeInt(0);
     }
 
+    public static void sendPlayerNameAndId(DataOutputStream stream, String name, int playerId) throws IOException {
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        stream.writeBoolean(false);
+        stream.writeUTF(name);
+        stream.writeByte(playerId);
+    }
+
+    public static void sendPlayerName(DataOutputStream stream, String name) throws IOException{
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        stream.writeUTF(name);
+    }
+
+    public static String receivePlayerName(DataInputStream stream) throws IOException {
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        return stream.readUTF();
+    }
+
+    /*
+    public static NameIdStart receivePlayerNameAndId(DataInputStream stream) throws IOException{
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        String name = stream.readUTF();
+        int id = stream.readByte();
+        return new NameIdStart(name, id);
+    }*/
+
+
+    public static NameIdStart waitForStartSignalAndNames(DataInputStream stream) throws IOException{
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        if (stream == null) {
+            throw new IllegalArgumentException();
+        }
+        if (stream.readBoolean()) {
+            return new NameIdStart(null, -1, true);
+        }
+        String name = stream.readUTF();
+        int id = stream.readByte();
+        return new NameIdStart(name, id, false);
+    }
+
+    public static void sendStartSignal(DataOutputStream stream) throws IOException {
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        stream.writeBoolean(true);
+    }
+
+
+
     /**
+     * TODO: Remove.
      * When all clients are connected to the game then the server sends this signal to each client to initiate the game.
      * @param stream Start signal is written to this stream.
      * @throws IOException
      */
-    public static void sendStartSignal(DataOutputStream stream, int playerId, int numPlayers) throws IOException{
+    public static void sendStartSignal_old(DataOutputStream stream, int playerId, int numPlayers) throws IOException{
         if(stream == null){
             throw new IllegalArgumentException();
         }
@@ -79,11 +150,12 @@ abstract class GameCommunicator{
     }
 
     /**
+     * TODO: Remove.
      * After connecting to the server, the clients have to wait for the server to start the game by sending the start signal.
      * @param stream Start signal will be written to this stream by server.
      * @throws IOException
      */
-    public static int[] waitForStartSignal(DataInputStream stream) throws IOException{
+    public static int[] waitForStartSignal_old(DataInputStream stream) throws IOException{
         if(stream == null){
             throw new IllegalArgumentException();
         }
@@ -92,4 +164,5 @@ abstract class GameCommunicator{
         int[] res = {myId, numPlayers};
         return res;
     }
+
 }

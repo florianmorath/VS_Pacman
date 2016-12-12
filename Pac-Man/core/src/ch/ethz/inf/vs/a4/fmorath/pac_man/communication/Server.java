@@ -17,6 +17,7 @@ import java.util.List;
  */
 public class Server extends CommunicationEntity{
     private final List<Socket> clients;
+    private final List<String> playerNames;
     private final List<SendingQueue> sendingQueues;
     private boolean gameStarted;
     private boolean gameStopped;
@@ -24,11 +25,13 @@ public class Server extends CommunicationEntity{
     /**
      * Constructor.
      */
-    public Server(int port){
+    public Server(int port, String myName){
         super(port);
         gameStarted = false;
         gameStopped = false;
         clients = new ArrayList<Socket>();
+        playerNames = new ArrayList<String>();
+        playerNames.add(myName);
         this.sendingQueues = new ArrayList<SendingQueue>();
     }
 
@@ -48,7 +51,9 @@ public class Server extends CommunicationEntity{
             public void run() {
                 try {
                     waitForNewClients();
-                    onGameStarts();
+                    if(!gameStopped) {
+                        onGameStarts();
+                    }
                 } catch (IOException e) {
                     //connection problems.
                     e.printStackTrace();
@@ -111,7 +116,7 @@ public class Server extends CommunicationEntity{
         startSendingLoops();
         try {
             sendStartSignalToAllClients();
-            notifyStartHandler(0,clients.size()+1);
+            notifyStartHandlerStart();
         } catch (IOException e) {
             e.printStackTrace(); //Todo: add proper exception handling.
         }
@@ -125,16 +130,16 @@ public class Server extends CommunicationEntity{
      */
     private void waitForNewClients() throws IOException {
 
+        notifyHandlerNewPlayer(playerNames.get(0), 0, true);
         ServerSocket serverSocket = new ServerSocket(getPort());
         serverSocket.setSoTimeout(3000);
 
         // Loop until game starts.
         while(!gameStarted){
-            // Create a socket
-            //Gdx.app.log(LOGGING_TAG, "Waiting for connections.");
             try {
                 Socket socket = serverSocket.accept();
                 clients.add(socket);
+                getAndDistributeNewClientsName(socket);
                 //Gdx.app.log(LOGGING_TAG, "Got connection from " + socket.getRemoteAddress());
             }catch(IOException ex){
                 //do nothing because the timeout is expected.
@@ -142,6 +147,37 @@ public class Server extends CommunicationEntity{
         }
 
         serverSocket.close();
+    }
+
+    private void getAndDistributeNewClientsName(final Socket socket) throws IOException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DataOutputStream out = null;
+                try {
+                    out = new DataOutputStream(socket.getOutputStream());
+                    DataInputStream in = new DataInputStream(socket.getInputStream());
+                    int newId;
+                    String newName = GameCommunicator.receivePlayerName(in);
+                    synchronized (this) {
+                        newId = playerNames.size();
+                        GameCommunicator.sendPlayerNameAndId(out, newName, newId);
+                        for (int i = 0; i < playerNames.size(); ++i){
+                            GameCommunicator.sendPlayerNameAndId(out, playerNames.get(i), i);
+                        }
+                        for(Socket c: clients){
+                            GameCommunicator.sendPlayerNameAndId(new DataOutputStream(c.getOutputStream()), newName, newId);
+                        }
+                        playerNames.add(newName);
+                    }
+                    notifyHandlerNewPlayer(newName, newId, false);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+
     }
 
 
@@ -220,7 +256,7 @@ public class Server extends CommunicationEntity{
     private void sendStartSignalToAllClients() throws IOException {
         for(int i=0;i<clients.size();++i){
             Socket s = clients.get(i);
-            GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()),i+1,clients.size()+1);
+            GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()));
         }
     }
 

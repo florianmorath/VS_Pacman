@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import javax.print.DocFlavor;
+
 /**
  * Created by johannes on 22.11.16.
  */
@@ -19,14 +21,18 @@ public class Client extends CommunicationEntity {
     private DataInputStream in;
     private DataOutputStream out;
     private SendingQueue sendingQueue;
+    private int localId = -1;
+    private String myName;
+    //private boolean started = false;
 
     /**
      * Constructor.
      */
-    public Client(int port){
+    public Client(int port, String myName){
         super(port);
         this.socket = null;
         this.sendingQueue = null;
+        this.myName = myName;
     }
 
     /**
@@ -38,9 +44,22 @@ public class Client extends CommunicationEntity {
      */
     public void connectAndStartGame(String serverAddress) throws IOException {
         connectToServer(serverAddress);
+        GameCommunicator.sendPlayerName(out, myName);
+        boolean started;
+        do {
+            GameCommunicator.NameIdStart newPlayer = GameCommunicator.waitForStartSignalAndNames(in);
+            started = newPlayer.started;
+            if(!started){
+                if(localId < 0){
+                    localId = newPlayer.id;
+                }else {
+                    notifyHandlerNewPlayer(newPlayer.name, newPlayer.id, newPlayer.id == localId);
+                }
+            }
+        }while(!started);
+
         startReceiveActionLoop();
-        int[] res =GameCommunicator.waitForStartSignal(in);
-        notifyStartHandler(res[0],res[1]);
+        notifyStartHandlerStart();
 
     }
 
@@ -58,9 +77,9 @@ public class Client extends CommunicationEntity {
      * @param serverAddress Ip-Address or hostname of the server.
      */
     private void connectToServer(String serverAddress) {
-        //SocketHints hints = new SocketHints();
         try {
-            socket = new Socket(serverAddress, getPort());//Gdx.net.newClientSocket(Net.Protocol.TCP, serverAddress,SERVER_PORT, hints);
+            int port = getPort();
+            socket = new Socket(serverAddress, port);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
             sendingQueue = new SendingQueue(out);

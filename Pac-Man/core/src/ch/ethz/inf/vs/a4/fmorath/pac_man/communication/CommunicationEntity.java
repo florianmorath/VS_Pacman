@@ -74,9 +74,13 @@ abstract public class CommunicationEntity {
     /**
      * notify start signal handler that game started.
      */
-    protected void notifyStartHandler(int playerId, int numPlayers){
+    protected void notifyStartHandlerStart(){
         if(startSignalHandler != null)
-            startSignalHandler.receivedStartSignal(playerId,numPlayers);
+            startSignalHandler.receivedStartSignal();
+    }
+
+    protected void notifyHandlerNewPlayer(String name, int id, boolean isLocal){
+        startSignalHandler.receivedNewPlayer(name, id, isLocal);
     }
 
     abstract public void send(PlayerAction action) throws IOException;

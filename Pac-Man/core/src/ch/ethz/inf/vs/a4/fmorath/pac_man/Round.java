@@ -93,7 +93,11 @@ public class Round extends Stage {
         batch.begin();
         font.draw(batch, "HIGH SCORE",                                          113, 271, 0, 1, false);
         font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 57,  262, 0, 2, false);
-        font.draw(batch, Integer.toString(game.getHighScore()),                 137, 262, 0, 2, false);
+        String playerIDs= "";
+        for(Player p: game.getPlayers()){
+            playerIDs += p.getPlayerId() + p.name;
+        }
+        font.draw(batch, playerIDs /*Integer.toString(game.getHighScore())*/,                 137, 262, 0, 2, false);
         batch.end();
     }
 

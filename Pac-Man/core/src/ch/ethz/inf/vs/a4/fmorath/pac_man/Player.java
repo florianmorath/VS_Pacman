@@ -15,7 +15,7 @@ public class Player implements Comparable<Player> {
         return playerId;
     }
     private Game game;
-    private String name;
+    public String name;
     private boolean isLocalPlayer;
     public boolean isLocalPlayer() {
         return isLocalPlayer;
@@ -29,6 +29,8 @@ public class Player implements Comparable<Player> {
         this.figure = figure;
         figure.setPlayer(this);
     }
+
+
 
     private int score = 0;
     public int getScore() {

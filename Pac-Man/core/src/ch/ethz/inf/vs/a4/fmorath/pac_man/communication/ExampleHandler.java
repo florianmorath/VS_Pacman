@@ -10,7 +10,7 @@ import com.badlogic.gdx.Gdx;
 /**
  * TODO: remove this class later. Only serves as example how to implement a PlayerActionHandler. Of course instead of printing the actions, they should be used to update the game state.
  */
-public class ExampleHandler implements PlayerActionHandler {
+public class ExampleHandler implements PlayerActionHandler, StartSignalHandler, StopSignalHandler {
     private final String tag;
 
     public ExampleHandler(String tag){

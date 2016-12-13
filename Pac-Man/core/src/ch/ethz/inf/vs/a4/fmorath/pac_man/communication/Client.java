@@ -17,8 +17,7 @@ import java.io.IOException;
 /**
  * Client class for the Pac Man game communication protocol.
  */
-public class Client implements CommunicationConstants{
-    private PlayerActionHandler handler;
+public class Client extends CommunicationEntity implements CommunicationConstants{
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -26,10 +25,8 @@ public class Client implements CommunicationConstants{
 
     /**
      * Constructor.
-     * @param handler The handler that reacts to messages from the Network.
      */
-    public Client(PlayerActionHandler handler){
-        this.handler = handler;
+    public Client(){
         this.socket = null;
         this.sendingQueue = null;
     }
@@ -45,7 +42,7 @@ public class Client implements CommunicationConstants{
         connectToServer(serverAddress);
         startReceiveActionLoop();
         GameCommunicator.waitForStartSignal(in);
-        handler.receivedStartSignal();
+        notifyStartHandler();
 
     }
 
@@ -92,7 +89,7 @@ public class Client implements CommunicationConstants{
                             sendingQueue.stop();
                             GameCommunicator.sendStopSignal(out); //This helps the server to properly shut down its threads.
                             stopped = true;
-                            handler.receivedStopSignal();
+                            notifyStopHandler();
                         }else {
                             notifyHandler(action);
                         }
@@ -107,12 +104,5 @@ public class Client implements CommunicationConstants{
         }).start();
     }
 
-    /**
-     * Method used to notify the Handler about received actions.
-     * @param action The received action.
-     */
-    private void notifyHandler(PlayerAction action){
-        this.handler.updatePlayerFigure(action);
-    }
 
 }

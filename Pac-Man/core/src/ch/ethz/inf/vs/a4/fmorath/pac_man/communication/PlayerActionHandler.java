@@ -16,16 +16,4 @@ public interface PlayerActionHandler {
      * @param action The received player action.
      */
     void updatePlayerFigure(PlayerAction action);
-
-    /**
-     * This function will be called, when the start signal was received.
-     * Note that it will also be called by the server, when it sends start signals to all other players.
-     */
-    void receivedStartSignal();
-
-    /**
-     * This function will be called, when the stop signal was received.
-     * Note that it will also be called by the server, when it sends start signals to all other players.
-     */
-    void receivedStopSignal();
 }

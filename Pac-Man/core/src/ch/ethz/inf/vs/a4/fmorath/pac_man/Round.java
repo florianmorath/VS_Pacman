@@ -1,6 +1,9 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -10,13 +13,14 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Ghost;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Coin;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.LargeCoin;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.SmallCoin;
 
@@ -25,6 +29,8 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.SmallCoin;
  */
 
 public class Round extends Stage {
+
+    private static final int LARGE_COIN_DURATION = 10;
 
     private final int backgroundLayerId = 0;
     private final int wallsLayerId = 1;
@@ -37,29 +43,33 @@ public class Round extends Stage {
     private Game game;
     private int roundNumber;
     private Array<Player> players;
+    private PacMan pacMan;
+    private Figure[] figures;
 
-    PacMan pacMan = new PacMan(this, 104, 52);
-    Figure[] figures = new Figure[]{
-            pacMan,
-            new Ghost (this, 104, 148, pacMan, Ghost.BLINKY),
-            new Ghost (this, 104, 124, pacMan, Ghost.PINKY),
-            new Ghost (this, 88, 124, pacMan, Ghost.INKY),
-            new Ghost (this, 120, 124, pacMan, Ghost.CLYDE)
-    };
+    private boolean isPaused = true;
 
     private TiledMap map;
-    private Array<Rectangle> walls = new Array<Rectangle>();
-    private Array<Collectible> collectibles = new Array<Collectible>();
-
     private BitmapFont font;
+    private Music beginningSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/beginning.wav"));
+    private Music sirenSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/siren.mp3"));
+    private Music fastSirenSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/fast_siren.mp3"));
+    private Sound wakaSound1 = Gdx.audio.newSound(Gdx.files.internal("sounds/waka1.mp3"));
+    private Sound wakaSound2 = Gdx.audio.newSound(Gdx.files.internal("sounds/waka2.mp3"));
+    private Sound eatGhostSound = Gdx.audio.newSound(Gdx.files.internal("sounds/eat_ghost.wav"));
+    private Music deathSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/death.wav"));
 
+    private Array<Rectangle> walls = new Array<Rectangle>();
     public Array<Rectangle> getWalls() {
         return walls;
     }
 
-    public Array<Collectible> getCollectibles() {
-        return collectibles;
+    private Array<Coin> coins = new Array<Coin>();
+    public Array<Coin> getCoins() {
+        return coins;
     }
+
+    private float largeCoinCountdown;
+    private int exponent;
 
     public Round(Game game, int roundNumber, Viewport viewport, TiledMap map, Array<Player> players) {
         super(viewport);
@@ -75,13 +85,44 @@ public class Round extends Stage {
         generator.dispose();
 
         initWalls();
-        initCollectibles();
+        initCoins();
+
+        pacMan = new PacMan(this, 104, 52);
+        figures = new Figure[]{
+                pacMan,
+                new Ghost (this, 104, 148, pacMan, Ghost.BLINKY),
+                new Ghost (this, 104, 124, pacMan, Ghost.PINKY),
+                new Ghost (this, 88, 124, pacMan, Ghost.INKY),
+                new Ghost (this, 120, 124, pacMan, Ghost.CLYDE)
+        };
 
         int i = roundNumber;
         for (Player player : players) {
             player.setFigure(figures[i]);
             addActor(figures[i]);
             i = (i + 1) % players.size;
+        }
+
+        beginningSound.play();
+        beginningSound.setOnCompletionListener(new Music.OnCompletionListener() {
+            @Override
+            public void onCompletion(Music music) {
+                sirenSound.setLooping(true);
+                sirenSound.play();
+                fastSirenSound.setLooping(true);
+                isPaused = false;
+            }
+        });
+    }
+
+    @Override
+    public void act(float delta) {
+        if (!isPaused) {
+            super.act(delta);
+            if (largeCoinCountdown > 0)
+                largeCoinCountdown -= delta;
+            else
+                onLargeCoinEnded();
         }
     }
 
@@ -90,13 +131,79 @@ public class Round extends Stage {
         super.draw();
         Batch batch = getBatch();
         batch.begin();
-        font.draw(batch, "HIGH SCORE",                                          113, 271, 0, 1, false);
-        font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 57,  262, 0, 2, false);
-        font.draw(batch, Integer.toString(game.getHighScore()),                 137, 262, 0, 2, false);
+
+        font.draw(batch, "SCORE",                                               4,   271, 0, Align.left,   false);
+        font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 4,   262, 0, Align.left,   false);
+
+        font.draw(batch, "HIGH SCORE",                                          113, 271, 0, Align.center, false);
+        font.draw(batch, Integer.toString(game.getHighScore()),                 113, 262, 0, Align.center, false);
+
+        if (largeCoinCountdown > 0)
+            font.draw(batch, Integer.toString((int) largeCoinCountdown),        220, 262, 0, Align.right,  false);
+
+        if (beginningSound.isPlaying()) {
+            font.setColor(new Color(1, 1, 0, 1));
+            font.draw(batch, "READY!", 113, 111, 0, Align.center, false);
+            font.setColor(new Color(1, 1, 1, 1));
+        }
+
         batch.end();
     }
 
-    public void end() {
+    public void onLargeCoinCollected() {
+        setGhostsVulnerability(true);
+        largeCoinCountdown = LARGE_COIN_DURATION;
+        exponent = 1;
+        sirenSound.stop();
+        fastSirenSound.play();
+    }
+
+    private void onLargeCoinEnded() {
+        setGhostsVulnerability(false);
+        fastSirenSound.stop();
+        sirenSound.play();
+    }
+
+    private void setGhostsVulnerability(boolean value) {
+        for (Figure figure : figures)
+            if (figure instanceof Ghost)
+                ((Ghost) figure).setVulnerable(value);
+    }
+
+    public void onGhostEaten() {
+        eatGhostSound.play();
+        pacMan.getPlayer().increaseScore((int) Math.pow(200, exponent++));
+    }
+
+    public void end(boolean pacManWon) {
+        if (pacManWon) {
+            onEnded();
+            return;
+        }
+
+        isPaused = true;
+
+        deathSound.play();
+        deathSound.setOnCompletionListener(new Music.OnCompletionListener() {
+            @Override
+            public void onCompletion(Music music) {
+                onEnded();
+            }
+        });
+    }
+
+    private void onEnded() {
+        sirenSound.stop();
+        fastSirenSound.stop();
+
+        beginningSound.dispose();
+        sirenSound.dispose();
+        fastSirenSound.dispose();
+        wakaSound1.dispose();
+        wakaSound2.dispose();
+        eatGhostSound.dispose();
+        deathSound.dispose();
+
         game.endRound();
     }
 
@@ -106,19 +213,28 @@ public class Round extends Stage {
             walls.add(rectangleMapObject.getRectangle());
     }
 
-    private void initCollectibles() {
+    private void initCoins() {
         TiledMapTileLayer smallCoinsLayer = (TiledMapTileLayer) map.getLayers().get(smallCoinsLayerId);
         MapLayer smallCoinsCollisionLayer = map.getLayers().get(smallCoinsCollisionLayerId);
         for (RectangleMapObject rectangleMapObject : smallCoinsCollisionLayer.getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleMapObject.getRectangle();
-            collectibles.add(new SmallCoin(collectibles, smallCoinsLayer, rectangle, (int) rectangle.getX() / 4, (int) rectangle.getY() / 4));
+            coins.add(new SmallCoin(this, coins, smallCoinsLayer, rectangle));
         }
 
         TiledMapTileLayer largeCoinsLayer = (TiledMapTileLayer) map.getLayers().get(largeCoinsLayerId);
         MapLayer largeCoinsCollisionLayer = map.getLayers().get(largeCoinsCollisionLayerId);
         for (RectangleMapObject rectangleMapObject : largeCoinsCollisionLayer.getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleMapObject.getRectangle();
-            collectibles.add(new LargeCoin(collectibles, largeCoinsLayer, rectangle, (int) rectangle.getX() / 4, (int) rectangle.getY() / 4));
+            coins.add(new LargeCoin(this, coins, largeCoinsLayer, rectangle));
         }
+    }
+
+    private boolean wakaIndex;
+    public void playWaka() {
+        wakaIndex = !wakaIndex;
+        if (wakaIndex)
+            wakaSound1.play();
+        else
+            wakaSound2.play();
     }
 }

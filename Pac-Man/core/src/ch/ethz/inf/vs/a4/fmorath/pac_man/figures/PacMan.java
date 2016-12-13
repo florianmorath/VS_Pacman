@@ -5,9 +5,11 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.*;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Coin;
 
 /**
  * Created by markus on 25.11.16.
@@ -16,11 +18,15 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
 public class PacMan extends Figure {
 
     private Animation currentAnimation;
-    private Animation animUp, animRight, animDown, animLeft;
+    private Animation animUp, animRight, animDown, animLeft, animDeath;
+    private Array<Rectangle> walls;
+    protected Array<Rectangle> getWalls() {
+        return walls;
+    }
 
     @Override
     protected void initAnimations() {
-        TextureRegion[] upFrames, rightFrames, downFrames, leftFrames;
+        TextureRegion[] upFrames, rightFrames, downFrames, leftFrames, deathFrames;
         TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("sprites/pac_man.atlas"));
 
         upFrames = new TextureRegion[3];
@@ -43,10 +49,16 @@ public class PacMan extends Figure {
         leftFrames[1] = textureAtlas.findRegion("pac_man_left_1");
         leftFrames[2] = textureAtlas.findRegion("pac_man_left_2");
 
+        deathFrames = new TextureRegion[11];
+        for (int i = 0; i < deathFrames.length; i++) {
+            deathFrames[i] = textureAtlas.findRegion("pac_man_death_" + (i+1));
+        }
+
         animUp    = new Animation(FRAME_DURATION, upFrames);
         animRight = new Animation(FRAME_DURATION, rightFrames);
         animDown  = new Animation(FRAME_DURATION, downFrames);
         animLeft  = new Animation(FRAME_DURATION, leftFrames);
+        animDeath = new Animation(2 * FRAME_DURATION, deathFrames);
 
         currentAnimation = animLeft;
     }
@@ -65,12 +77,15 @@ public class PacMan extends Figure {
         super(round, x, y);
         this.setWidth(currentAnimation.getKeyFrame(0).getRegionWidth());
         this.setHeight(currentAnimation.getKeyFrame(0).getRegionHeight());
+
+        walls = new Array<Rectangle>(round.getWalls());
+        walls.add(new Rectangle(104, 144, 16, 4));
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        for (Collectible collectible : round.getCollectibles())
+        for (Coin collectible : round.getCoins())
             if (collectible.intersects(this))
                 collectible.collect(player);
     }
@@ -78,6 +93,15 @@ public class PacMan extends Figure {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        batch.draw(currentAnimation.getKeyFrame(elapsedTime, true), getX(), getY());
+        batch.draw(currentAnimation.getKeyFrame(elapsedTime, currentAnimation != animDeath), getX(), getY());
+    }
+
+    public void onLargeCoinCollected() {
+        round.onLargeCoinCollected();
+    }
+
+    public void onDeath() {
+        currentAnimation = animDeath;
+        elapsedTime = 0;
     }
 }

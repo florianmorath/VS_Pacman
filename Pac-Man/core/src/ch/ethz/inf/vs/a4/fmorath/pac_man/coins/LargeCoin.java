@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 /**
@@ -13,8 +14,8 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 public class LargeCoin extends Coin {
 
-    public LargeCoin(Array<Coin> collectibles, TiledMapTileLayer layer, Rectangle rectangle) {
-        super(collectibles, layer, rectangle);
+    public LargeCoin(Round round, Array<Coin> collectibles, TiledMapTileLayer layer, Rectangle rectangle) {
+        super(round, collectibles, layer, rectangle);
     }
 
     @Override

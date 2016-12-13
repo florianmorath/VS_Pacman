@@ -38,6 +38,11 @@ public class Ghost extends Figure {
     }
 
     @Override
+    protected float getSpeed() {
+        return super.getSpeed() / (isVulnerable ? 2 : 1);
+    }
+
+    @Override
     protected void initAnimations() {
         TextureRegion[] frames, blueframes;
         TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("sprites/ghost.atlas"));
@@ -88,8 +93,10 @@ public class Ghost extends Figure {
                 round.onGhostEaten();
                 setPosition(104, 124);
                 isVulnerable = false;
-            } else
-                round.end();
+            } else {
+                pacMan.onDeath();
+                round.end(false);
+            }
         }
     }
 

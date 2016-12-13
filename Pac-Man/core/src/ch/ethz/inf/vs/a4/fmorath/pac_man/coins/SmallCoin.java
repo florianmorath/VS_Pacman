@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 
 /**
  * Created by linus on 05.12.2016.
@@ -12,13 +13,14 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 
 public class SmallCoin extends Coin {
 
-    public SmallCoin(Array<Coin> collectibles, TiledMapTileLayer layer, Rectangle rectangle) {
-        super(collectibles, layer, rectangle);
+    public SmallCoin(Round round, Array<Coin> collectibles, TiledMapTileLayer layer, Rectangle rectangle) {
+        super(round, collectibles, layer, rectangle);
     }
 
     @Override
     public void collect(Player player) {
         super.collect(player);
         player.increaseScore(10);
+        round.playWaka();
     }
 }

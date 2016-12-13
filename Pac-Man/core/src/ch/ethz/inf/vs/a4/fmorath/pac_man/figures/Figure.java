@@ -19,11 +19,15 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 
 public abstract class Figure extends Actor {
 
-    protected static final int CORNER_TOLERANCE = 5;
+    private static final int CORNER_TOLERANCE = 2;
     protected static final float FRAME_DURATION = 0.05f;
     private static final float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
+    protected float getSpeed() {
+        return SPEED;
+    }
 
     protected MovementDirection currentDirection = MovementDirection.NONE;
+    private MovementDirection newDirection = MovementDirection.NONE;
     protected float elapsedTime = 0f;
 
     protected Player player;
@@ -37,6 +41,9 @@ public abstract class Figure extends Actor {
     }
 
     protected Round round;
+    protected Array<Rectangle> getWalls() {
+        return round.getWalls();
+    }
 
     protected abstract void initAnimations();
     protected abstract void updateRepresentation();
@@ -53,56 +60,84 @@ public abstract class Figure extends Actor {
 
     @Override
     public void act(float delta) {
-        move(delta, round.getWalls());
+        tryToChangeDirection(delta);
+        tryToMove(delta);
     }
 
-    protected void move(float delta, Array<Rectangle> walls) {
-        float distance = SPEED * delta;
-        Vector2 direction = currentDirection.getVector();
+    private void tryToChangeDirection(float delta) {
+        if (currentDirection == newDirection || newDirection == MovementDirection.NONE)
+            return;
+
+        float distance = getSpeed() * delta;
+        Vector2 direction = newDirection.getVector();
         Vector2 position = new Vector2(getX(), getY());
         position = position.add(direction.scl(distance));
 
-        float viewportWidth = getStage().getCamera().viewportWidth;
-        float viewportHeight = getStage().getCamera().viewportHeight;
-
-        float halfWidth = getWidth() / 2;
-        float halfHeight = getHeight() / 2;
-
-        position.x = (position.x + halfWidth + viewportWidth) % viewportWidth - halfWidth;
-        position.y = (position.y + halfHeight + viewportHeight) % viewportHeight - halfHeight;
-
+        boolean noCollision = true;
+        Vector2 newPosition = new Vector2(position);
         Rectangle player = new Rectangle(position.x, position.y, this.getWidth(), this.getHeight());
-        for (Rectangle wall : walls) {
+        for (Rectangle wall : getWalls()) {
             if (Intersector.overlaps(wall, player)) {
+                noCollision = false;
+
                 if (direction.x != 0) {
                     if (Math.abs(wall.y + wall.height - position.y) < CORNER_TOLERANCE)
-                        position.y = wall.y + wall.height;
+                        newPosition.y = wall.y + wall.height;
                     else if (Math.abs(position.y + getHeight() - wall.y) < CORNER_TOLERANCE)
-                        position.y = wall.y - getHeight();
-                    else {
-                        if (currentDirection == MovementDirection.RIGHT)
-                            position.x = wall.x - player.width;
-                        else if (currentDirection == MovementDirection.LEFT)
-                            position.x = wall.x + wall.width;
-                        currentDirection = MovementDirection.NONE;
-                    }
+                        newPosition.y = wall.y - getHeight();
                 } else if (direction.y != 0) {
                     if (Math.abs(wall.x + wall.width - position.x) < CORNER_TOLERANCE)
-                        position.x = wall.x + wall.width;
+                        newPosition.x = wall.x + wall.width;
                     else if (Math.abs(position.x + getWidth() - wall.x) < CORNER_TOLERANCE)
-                        position.x = wall.x - getWidth();
-                    else {
-                        if (currentDirection == MovementDirection.UP)
-                            position.y = wall.y - player.height;
-                        else if (currentDirection == MovementDirection.DOWN)
-                            position.y = wall.y + wall.height;
-                        currentDirection = MovementDirection.NONE;
-                    }
+                        newPosition.x = wall.x - getWidth();
                 }
             }
         }
 
-        this.setPosition(position.x, position.y);
+        if ((noCollision || !newPosition.equals(position)) && canMoveToPosition(newPosition.add(direction.scl(distance)), newDirection)) {
+            setPosition(newPosition.x, newPosition.y);
+            currentDirection = newDirection;
+            updateRepresentation();
+        }
+    }
+
+    private void tryToMove(float delta) {
+        float distance = getSpeed() * delta;
+        Vector2 direction = currentDirection.getVector();
+        Vector2 position = new Vector2(getX(), getY());
+        position = position.add(direction.scl(distance));
+
+        if (canMoveToPosition(position, currentDirection)) {
+            float viewportWidth = getStage().getCamera().viewportWidth;
+            float viewportHeight = getStage().getCamera().viewportHeight;
+
+            float halfWidth = getWidth() / 2;
+            float halfHeight = getHeight() / 2;
+
+            position.x = (position.x + halfWidth + viewportWidth) % viewportWidth - halfWidth;
+            position.y = (position.y + halfHeight + viewportHeight) % viewportHeight - halfHeight;
+
+            this.setPosition(position.x, position.y);
+        } else {
+            newDirection = MovementDirection.NONE;
+            currentDirection = MovementDirection.NONE;
+        }
+    }
+
+    private boolean canMoveToPosition(Vector2 position, MovementDirection direction) {
+        Rectangle figure = new Rectangle(position.x, position.y, this.getWidth(), this.getHeight());
+        for (Rectangle wall : getWalls()) {
+            if (Intersector.overlaps(wall, figure)) {
+                switch (direction) {
+                    case RIGHT: position.x = wall.x - figure.width;  break;
+                    case LEFT:  position.x = wall.x + wall.width;    break;
+                    case UP:    position.y = wall.y - figure.height; break;
+                    case DOWN:  position.y = wall.y + wall.height;   break;
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -118,22 +153,21 @@ public abstract class Figure extends Actor {
                 // X dominated
                 if (velocityX >= 0) {
                     // Right fling
-                    currentDirection = MovementDirection.RIGHT;
+                    newDirection = MovementDirection.RIGHT;
                 } else {
                     // Left fling
-                    currentDirection = MovementDirection.LEFT;
+                    newDirection = MovementDirection.LEFT;
                 }
             } else {
                 // Y dominated
                 if (velocityY >= 0) {
                     //Down fling
-                    currentDirection = MovementDirection.DOWN;
+                    newDirection = MovementDirection.DOWN;
                 } else {
                     // Up fling
-                    currentDirection = MovementDirection.UP;
+                    newDirection = MovementDirection.UP;
                 }
             }
-            updateRepresentation();
 
             return true;
         }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 /**
@@ -13,12 +14,15 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 public abstract class Coin {
 
-    private Array<Coin> collectibles;
+    protected Round round;
+    private Array<Coin> coins;
     private TiledMapTileLayer.Cell cell1, cell2, cell3, cell4;
     protected Rectangle rectangle;
 
-    public Coin(Array<Coin> collectibles, TiledMapTileLayer layer, Rectangle rectangle) {
-        this.collectibles = collectibles;
+    public Coin(Round round, Array<Coin> coins, TiledMapTileLayer layer, Rectangle rectangle) {
+        this.round = round;
+        this.coins = coins;
+
         int posX = (int) rectangle.getX() / 4;
         int posY = (int) rectangle.getY() / 4;
         this.cell1 = layer.getCell(posX, posY);
@@ -41,6 +45,8 @@ public abstract class Coin {
         cell2.setTile(null);
         cell3.setTile(null);
         cell4.setTile(null);
-        collectibles.removeValue(this, true);
+        coins.removeValue(this, true);
+        if (coins.size == 0)
+            round.end(true);
     }
 }

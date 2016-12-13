@@ -1,13 +1,11 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
 
 
-//import java.net.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import javax.print.DocFlavor;
 
 /**
  * Created by johannes on 22.11.16.
@@ -23,7 +21,6 @@ public class Client extends CommunicationEntity {
     private SendingQueue sendingQueue;
     private int localId = -1;
     private String myName;
-    //private boolean started = false;
 
     /**
      * Constructor.
@@ -37,8 +34,9 @@ public class Client extends CommunicationEntity {
 
     /**
      * 1. Connect to the server.
-     * 2. Start the sending queue thread that allows to send actions to the server.
-     * 3. Start receiving thread that listens to actions from other players.
+     * 2. Send Player Name
+     * 3. Wait for all the players that connect to the game and for start signal
+     * 4. Start receiving thread that listens to actions from other players.
      * @param serverAddress Ip-Address or hostname of the server.
      * @throws IOException
      */
@@ -76,18 +74,13 @@ public class Client extends CommunicationEntity {
      * Then create and start the sending queue thread.
      * @param serverAddress Ip-Address or hostname of the server.
      */
-    private void connectToServer(String serverAddress) {
-        try {
+    private void connectToServer(String serverAddress) throws IOException {
             int port = getPort();
             socket = new Socket(serverAddress, port);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
             sendingQueue = new SendingQueue(out);
             sendingQueue.startSendingLoop();
-        }catch(IOException ex){
-            //Todo: Exception handling.
-            ex.printStackTrace();
-        }
     }
 
     /**
@@ -118,9 +111,7 @@ public class Client extends CommunicationEntity {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
-                    //TODO: Add proper exception handling
                 }
-                //Gdx.app.log(LOGGING_TAG,"Stopping receive thread [Client].");
 
             }
         }).start();

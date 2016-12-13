@@ -115,10 +115,7 @@ abstract class GameCommunicator{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        if (stream == null) {
-            throw new IllegalArgumentException();
-        }
-        if (stream.readBoolean()) {
+        if (stream.readByte() == 1) {
             return new NameIdStart(null, -1, true);
         }
         String name = stream.readUTF();
@@ -130,7 +127,7 @@ abstract class GameCommunicator{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        stream.writeBoolean(true);
+        stream.writeByte(1);
     }
 
 

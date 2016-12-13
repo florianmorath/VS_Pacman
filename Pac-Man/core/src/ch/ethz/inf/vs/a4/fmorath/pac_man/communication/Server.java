@@ -133,6 +133,7 @@ public class Server extends CommunicationEntity{
         notifyHandlerNewPlayer(playerNames.get(0), 0, true);
         ServerSocket serverSocket = new ServerSocket(getPort());
         serverSocket.setSoTimeout(3000);
+        serverSocket.setReuseAddress(true);
 
         // Loop until game starts.
         while(!gameStarted){
@@ -250,7 +251,6 @@ public class Server extends CommunicationEntity{
 
     /**
      * Method to send the start signal to all Clients.
-     * Todo: Parallelize the code. Maybe move this part to SendingQueue.
      * @throws IOException
      */
     private void sendStartSignalToAllClients() throws IOException {

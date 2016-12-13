@@ -64,6 +64,9 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
     public int getNumPlayers() {
         return players.size;
     }
+	public void removeAllPlayers(){
+		players = new Array<Player>();
+	}
 
     private int roundNumber = 0;
     private Round currentRound;

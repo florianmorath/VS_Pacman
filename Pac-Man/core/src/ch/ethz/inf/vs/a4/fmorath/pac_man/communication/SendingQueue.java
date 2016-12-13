@@ -63,8 +63,8 @@ class SendingQueue{
                                 try {
                                     SendingQueue.this.wait();
                                 } catch (InterruptedException e) {
+                                    //thread was interrupted.
                                     e.printStackTrace();
-                                    //Todo: add proper handling.
                                 }
                             }
                             if (!stopped) {
@@ -75,8 +75,8 @@ class SendingQueue{
                             try {
                                 GameCommunicator.sendAction(stream, action);
                             } catch (IOException e) {
+                                //Network error.
                                 e.printStackTrace();
-                                //Todo: add proper handling
                             }
                         }
                     }

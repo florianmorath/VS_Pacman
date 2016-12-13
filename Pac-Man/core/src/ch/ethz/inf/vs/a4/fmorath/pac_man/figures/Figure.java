@@ -158,10 +158,7 @@ public abstract class Figure extends Actor {
                     detectedDirection = MovementDirection.UP;
                 }
             }
-            int id = 1;
-            if(round.game.getIsServer())
-                id = 0;
-            PlayerAction action = new PlayerAction(id, getX(), getY(), detectedDirection);
+            PlayerAction action = new PlayerAction(player.getPlayerId(), getX(), getY(), detectedDirection);
             try {
                 round.game.communicator.send(action);
             } catch (IOException e) {

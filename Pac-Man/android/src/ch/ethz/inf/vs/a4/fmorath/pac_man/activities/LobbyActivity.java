@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.IOException;
 
@@ -48,6 +49,9 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
     protected void onResume() {
         super.onResume();
 
+        started = false;
+        cleanup();
+
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
         if (isHost) {
             findViewById(R.id.text_waiting_for_host).setVisibility(View.GONE);
@@ -70,7 +74,13 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
                         try {
                             client.connectAndStartGame(prefs.getString("join_ip_address", "127.0.0.1"));
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    TextView text = (TextView) findViewById(R.id.text_waiting_for_host);
+                                    text.setText("Unable to connect to server.");
+                                }
+                            });
                         }
 
                     }
@@ -79,18 +89,24 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
         }
     }
 
-    /*
     @Override
     protected void onStop() {
         super.onStop();
-        if(server != null && !started){
-            server.stop();
-            server = null;
+        cleanup();
+
+    }
+    private void cleanup(){
+        if(!started)
+        {
+            if(server != null && !started) {
+                server.stop();
+                server = null;
+            }
+            game = new Game();
+            client = null;
+            game.removeAllPlayers();
         }
-
-        client = null;
-
-    } */
+    }
 
     public void onStartButtonClick(View view) {
         server.startGame();
@@ -98,7 +114,7 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
 
     @Override
     public void receivedStartSignal() {
-
+        started = true;
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
     }

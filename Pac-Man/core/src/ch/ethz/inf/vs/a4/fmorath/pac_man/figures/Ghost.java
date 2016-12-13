@@ -30,18 +30,27 @@ public class Ghost extends Figure {
     private Color color;
     private Sprite currentSprite;
     private Sprite spriteUp, spriteRight, spriteDown, spriteLeft;
-    private Animation animation;
+    private Animation animation, blueAnimation;
+
+    private boolean isVulnerable;
+    public void setVulnerable(boolean isVulnerable) {
+        this.isVulnerable = isVulnerable;
+    }
 
     @Override
     protected void initAnimations() {
-        TextureRegion[] frames;
+        TextureRegion[] frames, blueframes;
         TextureAtlas textureAtlas = new TextureAtlas(Gdx.files.internal("sprites/ghost.atlas"));
 
         frames = new TextureRegion[2];
         frames[0] = textureAtlas.findRegion("ghost_1");
         frames[1] = textureAtlas.findRegion("ghost_2");
+        animation = new Animation(FRAME_DURATION, frames);
 
-        animation  = new Animation(FRAME_DURATION, frames);
+        blueframes = new TextureRegion[2];
+        blueframes[0] = textureAtlas.findRegion("ghost_blue_1");
+        blueframes[1] = textureAtlas.findRegion("ghost_blue_2");
+        blueAnimation = new Animation(FRAME_DURATION, blueframes);
 
         spriteUp = new Sprite(textureAtlas.findRegion("ghost_up"));
         spriteRight = new Sprite(textureAtlas.findRegion("ghost_right"));
@@ -68,13 +77,20 @@ public class Ghost extends Figure {
         this.setWidth(currentSprite.getWidth());
         this.setHeight(currentSprite.getHeight());
         this.setPosition(x, y);
+        this.isVulnerable = false;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        if (intersects(pacMan))
-            round.end();
+        if (intersects(pacMan)) {
+            if (isVulnerable) {
+                round.onGhostEaten();
+                setPosition(104, 124);
+                isVulnerable = false;
+            } else
+                round.end();
+        }
     }
 
     private boolean intersects(PacMan pacMan) {
@@ -91,13 +107,15 @@ public class Ghost extends Figure {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
+        if (!isVulnerable) {
+            // Draw ghost base before eyes
+            batch.setColor(color);
+            batch.draw(animation.getKeyFrame(elapsedTime, true), getX(), getY());
+            batch.setColor(Color.WHITE);
 
-        // Draw ghost base before eyes
-        batch.setColor(color);
-        batch.draw(animation.getKeyFrame(elapsedTime, true), getX(), getY());
-        batch.setColor(Color.WHITE);
-
-        // Draw eyes
-        batch.draw(currentSprite, getX(), getY());
+            // Draw eyes
+            batch.draw(currentSprite, getX(), getY());
+        } else
+            batch.draw(blueAnimation.getKeyFrame(elapsedTime, true), getX(), getY());
     }
 }

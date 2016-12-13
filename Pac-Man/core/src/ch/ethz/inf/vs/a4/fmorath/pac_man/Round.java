@@ -10,13 +10,14 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Ghost;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Coin;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.LargeCoin;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.SmallCoin;
 
@@ -25,6 +26,8 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.SmallCoin;
  */
 
 public class Round extends Stage {
+
+    private static final int LARGE_COIN_DURATION = 10;
 
     private final int backgroundLayerId = 0;
     private final int wallsLayerId = 1;
@@ -37,20 +40,24 @@ public class Round extends Stage {
     private Game game;
     private int roundNumber;
     private Array<Player> players;
+    private PacMan pacMan;
+    private Figure[] figures;
 
     private TiledMap map;
-    private Array<Rectangle> walls = new Array<Rectangle>();
-    private Array<Collectible> collectibles = new Array<Collectible>();
-
     private BitmapFont font;
 
+    private Array<Rectangle> walls = new Array<Rectangle>();
     public Array<Rectangle> getWalls() {
         return walls;
     }
 
-    public Array<Collectible> getCollectibles() {
-        return collectibles;
+    private Array<Coin> coins = new Array<Coin>();
+    public Array<Coin> getCoins() {
+        return coins;
     }
+
+    private float largeCoinCountdown;
+    private int exponent;
 
     public Round(Game game, int roundNumber, Viewport viewport, TiledMap map, Array<Player> players) {
         super(viewport);
@@ -66,10 +73,10 @@ public class Round extends Stage {
         generator.dispose();
 
         initWalls();
-        initCollectibles();
+        initCoins();
 
-        PacMan pacMan = new PacMan(this, 104, 52);
-        Figure[] figures = new Figure[]{
+        pacMan = new PacMan(this, 104, 52);
+        figures = new Figure[]{
                 pacMan,
                 new Ghost (this, 104, 148, pacMan, Ghost.BLINKY),
                 new Ghost (this, 104, 124, pacMan, Ghost.PINKY),
@@ -86,14 +93,46 @@ public class Round extends Stage {
     }
 
     @Override
+    public void act(float delta) {
+        super.act(delta);
+        if (largeCoinCountdown > 0)
+            largeCoinCountdown -= delta;
+        else
+            setGhostsVulnerability(false);
+    }
+
+    @Override
     public void draw() {
         super.draw();
         Batch batch = getBatch();
         batch.begin();
-        font.draw(batch, "HIGH SCORE",                                          113, 271, 0, 1, false);
-        font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 57,  262, 0, 2, false);
-        font.draw(batch, Integer.toString(game.getHighScore()),                 137, 262, 0, 2, false);
+
+        font.draw(batch, "SCORE",                                               4,   271, 0, Align.left,   false);
+        font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 4,   262, 0, Align.left,   false);
+
+        font.draw(batch, "HIGH SCORE",                                          113, 271, 0, Align.center, false);
+        font.draw(batch, Integer.toString(game.getHighScore()),                 113, 262, 0, Align.center, false);
+
+        if (largeCoinCountdown > 0)
+            font.draw(batch, Integer.toString((int) largeCoinCountdown),        220, 262, 0, Align.right,  false);
+
         batch.end();
+    }
+
+    public void onLargeCoinCollected() {
+        setGhostsVulnerability(true);
+        largeCoinCountdown = LARGE_COIN_DURATION;
+        exponent = 1;
+    }
+
+    private void setGhostsVulnerability(boolean value) {
+        for (Figure figure : figures)
+            if (figure instanceof Ghost)
+                ((Ghost) figure).setVulnerable(value);
+    }
+
+    public void onGhostEaten() {
+        pacMan.getPlayer().increaseScore((int) Math.pow(200, exponent++));
     }
 
     public void end() {
@@ -106,19 +145,19 @@ public class Round extends Stage {
             walls.add(rectangleMapObject.getRectangle());
     }
 
-    private void initCollectibles() {
+    private void initCoins() {
         TiledMapTileLayer smallCoinsLayer = (TiledMapTileLayer) map.getLayers().get(smallCoinsLayerId);
         MapLayer smallCoinsCollisionLayer = map.getLayers().get(smallCoinsCollisionLayerId);
         for (RectangleMapObject rectangleMapObject : smallCoinsCollisionLayer.getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleMapObject.getRectangle();
-            collectibles.add(new SmallCoin(collectibles, smallCoinsLayer, rectangle, (int) rectangle.getX() / 4, (int) rectangle.getY() / 4));
+            coins.add(new SmallCoin(coins, smallCoinsLayer, rectangle));
         }
 
         TiledMapTileLayer largeCoinsLayer = (TiledMapTileLayer) map.getLayers().get(largeCoinsLayerId);
         MapLayer largeCoinsCollisionLayer = map.getLayers().get(largeCoinsCollisionLayerId);
         for (RectangleMapObject rectangleMapObject : largeCoinsCollisionLayer.getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleMapObject.getRectangle();
-            collectibles.add(new LargeCoin(collectibles, largeCoinsLayer, rectangle, (int) rectangle.getX() / 4, (int) rectangle.getY() / 4));
+            coins.add(new LargeCoin(coins, largeCoinsLayer, rectangle));
         }
     }
 }

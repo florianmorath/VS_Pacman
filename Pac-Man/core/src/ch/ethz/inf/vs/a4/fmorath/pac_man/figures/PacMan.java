@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.*;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Coin;
 
 /**
  * Created by markus on 25.11.16.
@@ -76,7 +76,7 @@ public class PacMan extends Figure {
     @Override
     public void act(float delta) {
         move(delta, walls);
-        for (Collectible collectible : round.getCollectibles())
+        for (Coin collectible : round.getCoins())
             if (collectible.intersects(this))
                 collectible.collect(player);
     }
@@ -85,5 +85,9 @@ public class PacMan extends Figure {
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         batch.draw(currentAnimation.getKeyFrame(elapsedTime, true), getX(), getY());
+    }
+
+    public void onLargeCoinCollected() {
+        round.onLargeCoinCollected();
     }
 }

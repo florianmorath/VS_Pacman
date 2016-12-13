@@ -1,5 +1,5 @@
 ghost.png
-size: 96, 16
+size: 128, 16
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
@@ -41,6 +41,20 @@ ghost_down
 ghost_left
   rotate: false
   xy: 80, 0
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+ghost_blue_1
+  rotate: false
+  xy: 96, 0
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+ghost_blue_2
+  rotate: false
+  xy: 112, 0
   size: 16, 16
   orig: 16, 16
   offset: 0, 0

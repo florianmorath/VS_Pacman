@@ -12,7 +12,6 @@ import com.badlogic.gdx.utils.Array;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
 
 /**
  * Created by linus on 04.12.2016.
@@ -28,6 +27,9 @@ public abstract class Figure extends Actor {
     protected float elapsedTime = 0f;
 
     protected Player player;
+    public Player getPlayer() {
+        return player;
+    }
     public void setPlayer(Player player) {
         this.player = player;
         if (player.isLocalPlayer())

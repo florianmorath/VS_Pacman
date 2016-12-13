@@ -10,10 +10,10 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
  * Created by linus on 05.12.2016.
  */
 
-public class SmallCoin extends Collectible {
+public class SmallCoin extends Coin {
 
-    public SmallCoin(Array<Collectible> collectibles, TiledMapTileLayer layer, Rectangle rectangle, int posX, int posY) {
-        super(collectibles, layer, rectangle, posX, posY);
+    public SmallCoin(Array<Coin> collectibles, TiledMapTileLayer layer, Rectangle rectangle) {
+        super(collectibles, layer, rectangle);
     }
 
     @Override

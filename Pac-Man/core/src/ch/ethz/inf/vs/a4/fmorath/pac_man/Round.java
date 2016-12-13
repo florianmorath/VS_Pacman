@@ -38,15 +38,6 @@ public class Round extends Stage {
     private int roundNumber;
     private Array<Player> players;
 
-    PacMan pacMan = new PacMan(this, 104, 52);
-    Figure[] figures = new Figure[]{
-            pacMan,
-            new Ghost (this, 104, 148, pacMan, Ghost.BLINKY),
-            new Ghost (this, 104, 124, pacMan, Ghost.PINKY),
-            new Ghost (this, 88, 124, pacMan, Ghost.INKY),
-            new Ghost (this, 120, 124, pacMan, Ghost.CLYDE)
-    };
-
     private TiledMap map;
     private Array<Rectangle> walls = new Array<Rectangle>();
     private Array<Collectible> collectibles = new Array<Collectible>();
@@ -76,6 +67,15 @@ public class Round extends Stage {
 
         initWalls();
         initCollectibles();
+
+        PacMan pacMan = new PacMan(this, 104, 52);
+        Figure[] figures = new Figure[]{
+                pacMan,
+                new Ghost (this, 104, 148, pacMan, Ghost.BLINKY),
+                new Ghost (this, 104, 124, pacMan, Ghost.PINKY),
+                new Ghost (this, 88, 124, pacMan, Ghost.INKY),
+                new Ghost (this, 120, 124, pacMan, Ghost.CLYDE)
+        };
 
         int i = roundNumber;
         for (Player player : players) {

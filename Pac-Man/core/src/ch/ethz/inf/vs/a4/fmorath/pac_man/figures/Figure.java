@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
@@ -50,9 +51,10 @@ public abstract class Figure extends Actor {
 
     @Override
     public void act(float delta) {
-        move(delta);
+        move(delta, round.getWalls());
     }
-    private void move(float delta) {
+
+    protected void move(float delta, Array<Rectangle> walls) {
         float distance = SPEED * delta;
         Vector2 direction = currentDirection.getVector();
         Vector2 position = new Vector2(getX(), getY());
@@ -68,7 +70,7 @@ public abstract class Figure extends Actor {
         position.y = (position.y + halfHeight + viewportHeight) % viewportHeight - halfHeight;
 
         Rectangle player = new Rectangle(position.x, position.y, this.getWidth(), this.getHeight());
-        for (Rectangle wall : round.getWalls()) {
+        for (Rectangle wall : walls) {
             if (Intersector.overlaps(wall, player)) {
                 if (direction.x != 0) {
                     if (Math.abs(wall.y + wall.height - position.y) < CORNER_TOLERANCE)

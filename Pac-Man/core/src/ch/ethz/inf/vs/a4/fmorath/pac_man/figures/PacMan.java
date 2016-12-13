@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.*;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Collectible;
@@ -17,6 +19,7 @@ public class PacMan extends Figure {
 
     private Animation currentAnimation;
     private Animation animUp, animRight, animDown, animLeft;
+    private Array<Rectangle> walls;
 
     @Override
     protected void initAnimations() {
@@ -65,11 +68,14 @@ public class PacMan extends Figure {
         super(round, x, y);
         this.setWidth(currentAnimation.getKeyFrame(0).getRegionWidth());
         this.setHeight(currentAnimation.getKeyFrame(0).getRegionHeight());
+
+        walls = new Array<Rectangle>(round.getWalls());
+        walls.add(new Rectangle(104, 144, 16, 4));
     }
 
     @Override
     public void act(float delta) {
-        super.act(delta);
+        move(delta, walls);
         for (Collectible collectible : round.getCollectibles())
             if (collectible.intersects(this))
                 collectible.collect(player);

@@ -2,6 +2,7 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -49,7 +50,6 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 	private int worldHeight;
 
 	private TiledMap map;
-	private TiledMapRenderer mapRenderer;
 
 	private OrthographicCamera camera;
 	private Viewport viewport;
@@ -101,8 +101,6 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
 		worldHeight = 4 * map.getProperties().get("height", Integer.class);
 
-		mapRenderer = new OrthogonalTiledMapRenderer(map);
-
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(worldWidth, worldHeight + 40, camera);
 		this.communicator.setPlayerActionHandler(this);
@@ -117,13 +115,9 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 		camera.position.set(new Vector3(worldWidth / 2, worldHeight / 2 + 4, 0));
 		camera.update();
 
-		mapRenderer.setView(camera);
-		mapRenderer.render();
-
 		currentRound.act(Gdx.graphics.getDeltaTime());
+		currentRound.render(camera);
 		currentRound.draw();
-
-//		WallCollisionDetection();
 	}
 
 	@Override
@@ -138,14 +132,17 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
     }
 
     private void startRound() {
-        currentRound = new Round(this, roundNumber++, viewport, map, players);
+        currentRound = new Round(this, roundNumber, viewport, players, roundNumber == 0);
+		roundNumber++;
     }
 
 	public void endRound() {
 		if (roundNumber == getNumPlayers())
             hasEnded = true;
-        else
+        else {
+            currentRound.dispose();
             startRound();
+        }
 	}
 
 //	private void WallCollisionDetection() {
@@ -198,6 +195,7 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 			if(!p.isLocalPlayer() && p.getPlayerId() == action.playerId){
 				while(p.getFigure().positionChangeAvailable()){}
 				p.getFigure().setDirPos(action.newDirection, new Vector2(action.positionX,action.positionY));
+
 			}
 		}
 

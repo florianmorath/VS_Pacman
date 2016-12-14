@@ -119,8 +119,10 @@ public class Game extends ApplicationAdapter {
 	public void endRound() {
 		if (roundNumber == getNumPlayers())
             hasEnded = true;
-        else
+        else {
+            currentRound.dispose();
             startRound();
+        }
 	}
 
 	/**

@@ -65,6 +65,7 @@ public class PacMan extends Figure {
 
     @Override
     protected void updateRepresentation() {
+
         switch (currentDirection){
             case UP: currentAnimation = animUp; break;
             case RIGHT: currentAnimation = animRight; break;
@@ -92,7 +93,8 @@ public class PacMan extends Figure {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
+        if (currentDirection != MovementDirection.NONE || currentAnimation == animDeath)
+            elapsedTime += Gdx.graphics.getDeltaTime();
         batch.draw(currentAnimation.getKeyFrame(elapsedTime, currentAnimation != animDeath), getX(), getY());
     }
 

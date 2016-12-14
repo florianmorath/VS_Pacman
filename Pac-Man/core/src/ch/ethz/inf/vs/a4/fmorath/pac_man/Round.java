@@ -45,11 +45,12 @@ public class Round extends Stage {
     private final int largeCoinsLayerId = 5;
     private final int largeCoinsCollisionLayerId = 6;
 
-    private Game game;
+    public Game game;
     private int roundNumber;
     private Array<Player> players;
     private PacMan pacMan;
     private Figure[] figures;
+
 
     private boolean isPaused = true;
 
@@ -179,9 +180,11 @@ public class Round extends Stage {
     }
 
     private void onLargeCoinEnded() {
-        setGhostsVulnerability(false);
-        fastSirenSound.stop();
-        sirenSound.play();
+        if(fastSirenSound.isPlaying()) {
+            setGhostsVulnerability(false);
+            fastSirenSound.stop();
+            sirenSound.play();
+        }
     }
 
     private void setGhostsVulnerability(boolean value) {

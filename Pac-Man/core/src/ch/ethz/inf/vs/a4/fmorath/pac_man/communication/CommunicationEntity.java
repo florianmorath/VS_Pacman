@@ -4,14 +4,30 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
  * Created by johannes on 09.12.16.
  */
 
+import java.io.IOException;
+
 /**
  * A communication node (either Server or client) that notifies its handlers about communication events.
  */
-public class CommunicationEntity {
+abstract public class CommunicationEntity {
+
+    private int communicationPort;
 
     private PlayerActionHandler actionHandler;
     private StartSignalHandler startSignalHandler;
     private StopSignalHandler stopSignalHandler;
+
+    public CommunicationEntity(int communicationPort){
+        this.communicationPort = communicationPort;
+    }
+
+    /**
+     * Get the communication port
+     * @return
+     */
+    public int getPort(){
+        return communicationPort;
+    }
 
     /**
      * Setter for start signal handler
@@ -58,8 +74,14 @@ public class CommunicationEntity {
     /**
      * notify start signal handler that game started.
      */
-    protected void notifyStartHandler(){
+    protected void notifyStartHandlerStart(){
         if(startSignalHandler != null)
             startSignalHandler.receivedStartSignal();
     }
+
+    protected void notifyHandlerNewPlayer(String name, int id, boolean isLocal){
+        startSignalHandler.receivedNewPlayer(name, id, isLocal);
+    }
+
+    abstract public void send(PlayerAction action) throws IOException;
 }

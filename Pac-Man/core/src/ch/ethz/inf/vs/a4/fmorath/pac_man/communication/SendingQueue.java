@@ -1,6 +1,5 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
 
-import com.badlogic.gdx.Gdx;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.util.Queue;
  * This is achieved by starting a sending thread. This threads waits for the queue to be filled (concurrently) by other threads.
  * As soon as there are elements in the queue, the sending thread starts sending them over the network.
  */
-class SendingQueue implements CommunicationConstants{
+class SendingQueue{
     private final DataOutputStream stream;
     private final Queue<PlayerAction> outQueue;
     private Thread thread;
@@ -56,7 +55,7 @@ class SendingQueue implements CommunicationConstants{
                 @Override
                 public void run() {
 
-                    Gdx.app.log(LOGGING_TAG, "Starting queue thread.");
+                    //Gdx.app.log(LOGGING_TAG, "Starting queue thread.");
                     while (!stopped) {
                         PlayerAction action = null;
                         synchronized (SendingQueue.this) {
@@ -64,8 +63,8 @@ class SendingQueue implements CommunicationConstants{
                                 try {
                                     SendingQueue.this.wait();
                                 } catch (InterruptedException e) {
+                                    //thread was interrupted.
                                     e.printStackTrace();
-                                    //Todo: add proper handling.
                                 }
                             }
                             if (!stopped) {
@@ -76,12 +75,11 @@ class SendingQueue implements CommunicationConstants{
                             try {
                                 GameCommunicator.sendAction(stream, action);
                             } catch (IOException e) {
+                                //Network error.
                                 e.printStackTrace();
-                                //Todo: add proper handling
                             }
                         }
                     }
-                    Gdx.app.log(LOGGING_TAG, "Stopping queue thread.");
                 }
             });
         }

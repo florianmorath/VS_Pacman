@@ -10,4 +10,7 @@ public interface StartSignalHandler {
      * Note that it will also be called by the server, when it sends start signals to all other players.
      */
     void receivedStartSignal();
+
+    void receivedNewPlayer(String name, int id, boolean isLocal);
+
 }

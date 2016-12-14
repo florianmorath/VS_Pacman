@@ -9,9 +9,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 
+import java.io.IOException;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
 
 /**
  * Created by linus on 04.12.2016.
@@ -26,6 +29,7 @@ public abstract class Figure extends Actor {
         return SPEED;
     }
 
+    private Vector2 newPosition = null;
     protected MovementDirection currentDirection = MovementDirection.NONE;
     private MovementDirection newDirection = MovementDirection.NONE;
     protected float elapsedTime = 0f;
@@ -45,8 +49,20 @@ public abstract class Figure extends Actor {
         return round.getWalls();
     }
 
+
     protected abstract void initAnimations();
     protected abstract void updateRepresentation();
+
+    public void setDirPos(MovementDirection newDirection,Vector2 position){
+        synchronized (this){
+            this.newDirection = newDirection;
+            this.newPosition = position;
+        }
+    }
+
+    public boolean positionChangeAvailable(){
+        return newPosition != null && newDirection != MovementDirection.NONE;
+    }
 
     public Rectangle getRectangle() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
@@ -60,8 +76,40 @@ public abstract class Figure extends Actor {
 
     @Override
     public void act(float delta) {
+        updateFromReceivedData();
         tryToChangeDirection(delta);
         tryToMove(delta);
+    }
+
+    private void updateFromReceivedData(){
+        Vector2 position= null;
+        synchronized (this){
+            if(positionChangeAvailable()){
+                position = newPosition;
+                newPosition = null;
+            }
+        }
+        if(position != null)
+            setPosition(position.x,position.y);
+    }
+    private void move(float delta) {
+        float distance = SPEED * delta;
+        Vector2 position = new Vector2(getX(), getY());
+        if (positionChangeAvailable()) {
+
+            synchronized (this) {
+                position = newPosition;
+                currentDirection = newDirection;
+
+                newPosition = null;
+                newDirection = MovementDirection.NONE;
+            }
+        }
+        Vector2 direction = currentDirection.getVector();
+        position = position.add(direction.scl(distance));
+
+        float viewportWidth = getStage().getCamera().viewportWidth;
+        float viewportHeight = getStage().getCamera().viewportHeight;
     }
 
     private void tryToChangeDirection(float delta) {
@@ -149,25 +197,34 @@ public abstract class Figure extends Actor {
     private class MovementGestureAdapter extends GestureDetector.GestureAdapter {
         @Override
         public boolean fling(float velocityX, float velocityY, int button) {
+            MovementDirection detectedDirection;
             if (Math.abs(velocityX) >= Math.abs(velocityY)) {
                 // X dominated
                 if (velocityX >= 0) {
                     // Right fling
-                    newDirection = MovementDirection.RIGHT;
+                    detectedDirection = MovementDirection.RIGHT;
                 } else {
                     // Left fling
-                    newDirection = MovementDirection.LEFT;
+                    detectedDirection = MovementDirection.LEFT;
                 }
             } else {
                 // Y dominated
                 if (velocityY >= 0) {
                     //Down fling
-                    newDirection = MovementDirection.DOWN;
+                    detectedDirection = MovementDirection.DOWN;
                 } else {
                     // Up fling
-                    newDirection = MovementDirection.UP;
+                    detectedDirection = MovementDirection.UP;
                 }
             }
+            PlayerAction action = new PlayerAction(player.getPlayerId(), getX(), getY(), detectedDirection);
+            try {
+                round.game.communicator.send(action);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            newDirection = detectedDirection;
+            updateRepresentation();
 
             return true;
         }

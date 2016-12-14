@@ -10,8 +10,12 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
 
 public class Player implements Comparable<Player> {
 
+    private int playerId;
+    public int getPlayerId(){
+        return playerId;
+    }
     private Game game;
-    private String name;
+    public String name;
     private boolean isLocalPlayer;
     public boolean isLocalPlayer() {
         return isLocalPlayer;
@@ -26,6 +30,8 @@ public class Player implements Comparable<Player> {
         figure.setPlayer(this);
     }
 
+
+
     private int score = 0;
     public int getScore() {
         return score;
@@ -36,10 +42,11 @@ public class Player implements Comparable<Player> {
             game.setHighScore(score);
     }
 
-    public Player(Game game, String name, boolean isLocalPlayer) {
+    public Player(Game game, String name, boolean isLocalPlayer, int playerId) {
         this.game = game;
         this.name = name;
         this.isLocalPlayer = isLocalPlayer;
+        this.playerId = playerId;
     }
 
     @Override

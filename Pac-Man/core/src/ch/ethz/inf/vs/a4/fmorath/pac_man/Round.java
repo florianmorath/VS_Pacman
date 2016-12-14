@@ -3,14 +3,19 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Align;
@@ -49,8 +54,10 @@ public class Round extends Stage {
     private boolean isPaused = true;
 
     private TiledMap map;
+    private TiledMapRenderer mapRenderer;
+
     private BitmapFont font;
-    private Music beginningSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/beginning.wav"));
+    private Music startSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/start.wav"));
     private Music sirenSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/siren.mp3"));
     private Music fastSirenSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/fast_siren.mp3"));
     private Sound wakaSound1 = Gdx.audio.newSound(Gdx.files.internal("sounds/waka1.mp3"));
@@ -71,11 +78,13 @@ public class Round extends Stage {
     private float largeCoinCountdown;
     private int exponent;
 
-    public Round(Game game, int roundNumber, Viewport viewport, TiledMap map, Array<Player> players) {
+    public Round(Game game, int roundNumber, Viewport viewport, Array<Player> players, boolean playStartSound) {
         super(viewport);
         this.game = game;
         this.roundNumber = roundNumber;
-        this.map = map;
+        this.map = new TmxMapLoader().load("map.tmx");
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map);
+
         this.players = players;
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/font.ttf"));
@@ -103,16 +112,22 @@ public class Round extends Stage {
             i = (i + 1) % players.size;
         }
 
-        beginningSound.play();
-        beginningSound.setOnCompletionListener(new Music.OnCompletionListener() {
-            @Override
-            public void onCompletion(Music music) {
-                sirenSound.setLooping(true);
-                sirenSound.play();
-                fastSirenSound.setLooping(true);
-                isPaused = false;
-            }
-        });
+        sirenSound.setLooping(true);
+        fastSirenSound.setLooping(true);
+
+        if (playStartSound) {
+            startSound.play();
+            startSound.setOnCompletionListener(new Music.OnCompletionListener() {
+                @Override
+                public void onCompletion(Music music) {
+                    sirenSound.play();
+                    isPaused = false;
+                }
+            });
+        } else {
+            sirenSound.play();
+            isPaused = false;
+        }
     }
 
     @Override
@@ -141,13 +156,18 @@ public class Round extends Stage {
         if (largeCoinCountdown > 0)
             font.draw(batch, Integer.toString((int) largeCoinCountdown),        220, 262, 0, Align.right,  false);
 
-        if (beginningSound.isPlaying()) {
+        if (startSound.isPlaying()) {
             font.setColor(new Color(1, 1, 0, 1));
             font.draw(batch, "READY!", 113, 111, 0, Align.center, false);
             font.setColor(new Color(1, 1, 1, 1));
         }
 
         batch.end();
+    }
+
+    public void render(OrthographicCamera camera) {
+        mapRenderer.setView(camera);
+        mapRenderer.render();
     }
 
     public void onLargeCoinCollected() {
@@ -177,7 +197,9 @@ public class Round extends Stage {
 
     public void end(boolean pacManWon) {
         if (pacManWon) {
-            onEnded();
+            sirenSound.stop();
+            fastSirenSound.stop();
+            game.endRound();
             return;
         }
 
@@ -187,16 +209,16 @@ public class Round extends Stage {
         deathSound.setOnCompletionListener(new Music.OnCompletionListener() {
             @Override
             public void onCompletion(Music music) {
-                onEnded();
+                sirenSound.stop();
+                fastSirenSound.stop();
+                game.endRound();
             }
         });
     }
 
-    private void onEnded() {
-        sirenSound.stop();
-        fastSirenSound.stop();
-
-        beginningSound.dispose();
+    @Override
+    public void dispose() {
+        startSound.dispose();
         sirenSound.dispose();
         fastSirenSound.dispose();
         wakaSound1.dispose();
@@ -204,7 +226,7 @@ public class Round extends Stage {
         eatGhostSound.dispose();
         deathSound.dispose();
 
-        game.endRound();
+        map.dispose();
     }
 
     private void initWalls() {

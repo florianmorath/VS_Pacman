@@ -33,7 +33,6 @@ public class Game extends ApplicationAdapter {
 	private int worldHeight;
 
 	private TiledMap map;
-	private TiledMapRenderer mapRenderer;
 
 	private OrthographicCamera camera;
 	private Viewport viewport;
@@ -82,8 +81,6 @@ public class Game extends ApplicationAdapter {
 		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
 		worldHeight = 4 * map.getProperties().get("height", Integer.class);
 
-		mapRenderer = new OrthogonalTiledMapRenderer(map);
-
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(worldWidth, worldHeight + 40, camera);
 
@@ -98,13 +95,9 @@ public class Game extends ApplicationAdapter {
 		camera.position.set(new Vector3(worldWidth / 2, worldHeight / 2 + 4, 0));
 		camera.update();
 
-		mapRenderer.setView(camera);
-		mapRenderer.render();
-
 		currentRound.act(Gdx.graphics.getDeltaTime());
+		currentRound.render(camera);
 		currentRound.draw();
-
-//		WallCollisionDetection();
 	}
 
 	@Override
@@ -119,7 +112,8 @@ public class Game extends ApplicationAdapter {
     }
 
     private void startRound() {
-        currentRound = new Round(this, roundNumber++, viewport, map, players);
+        currentRound = new Round(this, roundNumber, viewport, players, roundNumber == 0);
+		roundNumber++;
     }
 
 	public void endRound() {
@@ -128,49 +122,6 @@ public class Game extends ApplicationAdapter {
         else
             startRound();
 	}
-
-//	private void WallCollisionDetection() {
-//
-//		getTiles(pacMan.getX(), pacMan.getY(), pacMan.getX()+pacMan.getWidth(), pacMan.getY()+pacMan.getHeight(), tiles);
-//
-//		for(Rectangle tile: tiles) {
-//			Gdx.app.log("tile", "true");
-//
-//			if (Intersector.overlaps(tile, new Rectangle(pacMan.getX(),pacMan.getY(),pacMan.getWidth(),pacMan.getHeight()))) {
-//				// collision happened
-//				Gdx.app.log("collision", "true");
-//
-//				// Isnt it easier to use System.out?
-//				System.out.println("### Collision detected");
-//
-//			}
-//		}
-
-//	}
-
-//	private void getTiles(float startX, float startY, float endX, float endY, Array<Rectangle> tiles) {
-//
-//		int startXX = Math.currentRound(startX);
-//		int startYY = Math.currentRound(startY);
-//		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
-//
-//		rectPool.freeAll(tiles);
-//		tiles.clear();
-//		for(int y =  startYY; y <= endY; y++) {
-//			for(int x = startXX; x <= endX; x++) {
-//				TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-//
-//				if(cell != null) {
-//					Gdx.app.log("cellFound", "true");
-//
-//					Rectangle rect = rectPool.obtain();
-//					rect.set(x, y, 1, 1);
-//					tiles.add(rect);
-//
-//				}
-//			}
-//		}
-//	}
 
 	/**
 	 * TODO: Remove this method. Only for Demonstration purposes how to use the communication protocol.

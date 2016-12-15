@@ -12,8 +12,11 @@ import com.badlogic.gdx.math.Rectangle;
 
 import org.w3c.dom.css.Rect;
 
+import java.io.IOException;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
 
 /**
  * Created by linus on 04.12.2016.
@@ -88,16 +91,24 @@ public class Ghost extends Figure {
     @Override
     public void act(float delta) {
         super.act(delta);
-        if (intersects(pacMan)) {
-            if (isVulnerable) {
-                round.onGhostEaten();
-                setPosition(104, 124);
-                isVulnerable = false;
-            } else {
-                pacMan.onDeath();
-                round.end(false);
+        if(round.game.isServer()) {
+            if (intersects(pacMan)) {
+                if (isVulnerable) {
+                    round.game.broadcastCollision(pacMan.getPlayer().getPlayerId(), getPlayer().getPlayerId());
+                    onEaten();
+                } else {
+                    round.game.broadcastCollision(getPlayer().getPlayerId(), pacMan.getPlayer().getPlayerId());
+                    pacMan.onDeath();
+                    round.end(false);
+                }
             }
         }
+    }
+
+    public void onEaten(){
+        round.onGhostEaten();
+        setPosition(104,124);
+        isVulnerable = false;
     }
 
     private boolean intersects(PacMan pacMan) {

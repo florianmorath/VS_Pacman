@@ -92,25 +92,6 @@ public abstract class Figure extends Actor {
         if(position != null)
             setPosition(position.x,position.y);
     }
-    private void move(float delta) {
-        float distance = SPEED * delta;
-        Vector2 position = new Vector2(getX(), getY());
-        if (positionChangeAvailable()) {
-
-            synchronized (this) {
-                position = newPosition;
-                currentDirection = newDirection;
-
-                newPosition = null;
-                newDirection = MovementDirection.NONE;
-            }
-        }
-        Vector2 direction = currentDirection.getVector();
-        position = position.add(direction.scl(distance));
-
-        float viewportWidth = getStage().getCamera().viewportWidth;
-        float viewportHeight = getStage().getCamera().viewportHeight;
-    }
 
     private void tryToChangeDirection(float delta) {
         if (currentDirection == newDirection || newDirection == MovementDirection.NONE)

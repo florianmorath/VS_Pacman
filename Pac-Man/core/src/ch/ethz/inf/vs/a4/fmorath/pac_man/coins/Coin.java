@@ -46,7 +46,9 @@ public abstract class Coin {
         cell3.setTile(null);
         cell4.setTile(null);
         coins.removeValue(this, true);
-        if (coins.size == 0)
+        if (coins.size == 0 && round.game.isServer()) {
+            round.game.broadcastPacManWon();
             round.end(true);
+        }
     }
 }

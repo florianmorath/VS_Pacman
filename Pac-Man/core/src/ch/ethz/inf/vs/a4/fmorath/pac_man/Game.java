@@ -2,13 +2,10 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -16,11 +13,15 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 
+import java.io.IOException;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Client;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.CommunicationEntity;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerActionHandler;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Ghost;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 
 public class Game extends ApplicationAdapter implements PlayerActionHandler{
@@ -37,7 +38,7 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 
 	}
 
-	public boolean getIsServer(){
+	public boolean isServer(){
 		return isServer;
 	}
 
@@ -87,15 +88,9 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
         Game.instance = this;
     }
 
+
 	@Override
 	public void create () {
-		/*try {
-			testCommunication();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}*/
 
 		map = new TmxMapLoader().load("map.tmx");
 		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
@@ -141,63 +136,61 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
             hasEnded = true;
         else {
             currentRound.dispose();
-            startRound();
+			Gdx.app.postRunnable(new Runnable() {
+				@Override
+				public void run() {
+					startRound();
+				}
+			});
         }
 	}
 
-//	private void WallCollisionDetection() {
-//
-//		getTiles(pacMan.getX(), pacMan.getY(), pacMan.getX()+pacMan.getWidth(), pacMan.getY()+pacMan.getHeight(), tiles);
-//
-//		for(Rectangle tile: tiles) {
-//			Gdx.app.log("tile", "true");
-//
-//			if (Intersector.overlaps(tile, new Rectangle(pacMan.getX(),pacMan.getY(),pacMan.getWidth(),pacMan.getHeight()))) {
-//				// collision happened
-//				Gdx.app.log("collision", "true");
-//
-//				// Isnt it easier to use System.out?
-//				System.out.println("### Collision detected");
-//
-//			}
-//		}
 
-//	}
+	public void broadcastCollision(int playerIdEats, int playerIdEaten){
+		if(!isServer){
+			throw new RuntimeException("only server can broadcast collisions");
+		}
+		Server server = (Server) communicator;
+		try {
+			server.sendCollisionToAllClients(playerIdEats, playerIdEaten);
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}
+	}
 
-//	private void getTiles(float startX, float startY, float endX, float endY, Array<Rectangle> tiles) {
-//
-//		int startXX = Math.currentRound(startX);
-//		int startYY = Math.currentRound(startY);
-//		TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get("Walls Layer");
-//
-//		rectPool.freeAll(tiles);
-//		tiles.clear();
-//		for(int y =  startYY; y <= endY; y++) {
-//			for(int x = startXX; x <= endX; x++) {
-//				TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-//
-//				if(cell != null) {
-//					Gdx.app.log("cellFound", "true");
-//
-//					Rectangle rect = rectPool.obtain();
-//					rect.set(x, y, 1, 1);
-//					tiles.add(rect);
-//
-//				}
-//			}
-//		}
-//	}
+	public void broadcastPacManWon(){
+		int pacManId = -1;
+		for(int i = 0; i<players.size; ++i){
+			if(players.get(i).isPacMan()){
+				pacManId = players.get(i).getPlayerId();
+			}
+		}
+		broadcastCollision(pacManId,pacManId);
+	}
 
 
 	@Override
 	public void updatePlayerFigure(PlayerAction action) {
-		//for(Player p: players){
-		for (int i=0; i<players.size; i++) {
-				Player p = players.get(i);
-				if(!p.isLocalPlayer() && p.getPlayerId() == action.playerId){
+		if(action.hasEatenPlayer()){
+			Player eaten = players.get(action.eatenPlayerId);
+			if(eaten.isPacMan()){
+				if(action.playerId == action.eatenPlayerId){
+					// pac man collected all coins
+					currentRound.end(true);
+				}else {
+					PacMan pacman = (PacMan) eaten.getFigure();
+					pacman.onDeath();
+					currentRound.end(false);
+				}
+			}else{
+				Ghost eatenGhost = (Ghost) eaten.getFigure();
+				eatenGhost.onEaten();
+			}
+		}else {
+			Player p = players.get(action.playerId);
+			if(!p.isLocalPlayer()){
 				while(p.getFigure().positionChangeAvailable()){}
-				p.getFigure().setDirPos(action.newDirection, new Vector2(action.positionX,action.positionY));
-
+				p.getFigure().setDirPos(action.newDirection, new Vector2(action.positionX, action.positionY));
 			}
 		}
 

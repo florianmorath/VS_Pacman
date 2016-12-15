@@ -191,8 +191,10 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 
 	@Override
 	public void updatePlayerFigure(PlayerAction action) {
-		for(Player p: players){
-			if(!p.isLocalPlayer() && p.getPlayerId() == action.playerId){
+		//for(Player p: players){
+		for (int i=0; i<players.size; i++) {
+				Player p = players.get(i);
+				if(!p.isLocalPlayer() && p.getPlayerId() == action.playerId){
 				while(p.getFigure().positionChangeAvailable()){}
 				p.getFigure().setDirPos(action.newDirection, new Vector2(action.positionX,action.positionY));
 

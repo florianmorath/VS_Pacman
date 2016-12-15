@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+
 /**
  * Created by johannes on 22.11.16.
  */
@@ -226,6 +228,11 @@ public class Server extends CommunicationEntity{
             queue.send(action); //Todo: exclude the socket that sent the action.
 
         }
+    }
+
+
+    public void sendCollisionToAllClients(int playerId, int playerIdEaten) throws IOException{
+        send(new PlayerAction(playerId,0,0, MovementDirection.NONE,playerIdEaten, 0));
     }
 
 

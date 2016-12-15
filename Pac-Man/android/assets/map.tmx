@@ -23,7 +23,7 @@
   </data>
  </layer>
  <objectgroup name="Walls Collision Layer">
-  <object id="66" x="180" y="20" width="23.375" height="15.4375"/>
+  <object id="66" x="180" y="20" width="24" height="16"/>
   <object id="67" x="0" y="4" width="4" height="72"/>
   <object id="68" x="220" y="4" width="4" height="72"/>
   <object id="69" x="0" y="0" width="224" height="4"/>

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
+
 /**
  * Created by johannes on 22.11.16.
  */
@@ -17,7 +19,7 @@ import java.util.Queue;
  */
 class SendingQueue{
     private final DataOutputStream stream;
-    private final Queue<PlayerAction> outQueue;
+    private final Queue<Action> outQueue;
     private Thread thread;
     private boolean stopped;
 
@@ -28,14 +30,14 @@ class SendingQueue{
     public SendingQueue(DataOutputStream stream){
         this.stopped = false;
         this.stream = stream;
-        this.outQueue = new ArrayDeque<PlayerAction>();
+        this.outQueue = new ArrayDeque<Action>();
     }
 
     /**
      * Add a new action to the queue.
      * @param action The action to be added to the queue (and eventually be sent over the network).
      */
-    public void send(PlayerAction action){
+    public void send(Action action){
         synchronized (this) {
             outQueue.add(action);
             if(thread != null)
@@ -57,7 +59,7 @@ class SendingQueue{
 
                     //Gdx.app.log(LOGGING_TAG, "Starting queue thread.");
                     while (!stopped) {
-                        PlayerAction action = null;
+                        Action action = null;
                         synchronized (SendingQueue.this) {
                             while (!stopped && outQueue.isEmpty()) {
                                 try {

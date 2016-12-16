@@ -6,6 +6,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
+
 
 /**
  * Created by johannes on 22.11.16.
@@ -65,7 +67,10 @@ public class Client extends CommunicationEntity {
      * Asynchronously send an action to the server.
      * @param action Action to be sent.
      */
-    public void send(PlayerAction action){
+    @Override
+    public void send(Action action) throws IOException {
+        if (!action.sendResponseToRequestingClient)
+            notifyHandler(action);
         sendingQueue.send(action);
     }
 
@@ -75,17 +80,17 @@ public class Client extends CommunicationEntity {
      * @param serverAddress Ip-Address or hostname of the server.
      */
     private void connectToServer(String serverAddress) throws IOException {
-            int port = getPort();
-            socket = new Socket(serverAddress, port);
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-            sendingQueue = new SendingQueue(out);
-            sendingQueue.startSendingLoop();
+        int port = getPort();
+        socket = new Socket(serverAddress, port);
+        in = new DataInputStream(socket.getInputStream());
+        out = new DataOutputStream(socket.getOutputStream());
+        sendingQueue = new SendingQueue(out);
+        sendingQueue.startSendingLoop();
     }
 
     /**
      * Start thread that listens to actions sent by the server.
-     * Notifies the PlayerActionHandler when receiving such a message.
+     * Notifies the ActionHandler when receiving such a message.
      * Stops when receiving a stop signal from the server.
      */
     private void startReceiveActionLoop(){
@@ -99,13 +104,13 @@ public class Client extends CommunicationEntity {
                     dataIn = new DataInputStream(socket.getInputStream());
                     boolean stopped = false;
                     while(!stopped) {
-                        PlayerAction action = GameCommunicator.receiveAction(dataIn);
+                        Action action = GameCommunicator.receiveAction(dataIn);
                         if(action.playerId < 0){ //received stop signal
                             sendingQueue.stop();
                             GameCommunicator.sendStopSignal(out); //This helps the server to properly shut down its threads.
                             stopped = true;
                             notifyStopHandler();
-                        }else {
+                        } else {
                             notifyHandler(action);
                         }
                     }

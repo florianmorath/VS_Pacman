@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
 
 /**
  * Created by johannes on 22.11.16.
@@ -87,22 +88,22 @@ public class Server extends CommunicationEntity{
      * Initiate the start of the game by setting the "gameStarted" flag.
      * Note that the game may not start immediately but only when the server socket times out.
      * That means, that you should not start sending messages after calling this method.
-     * Instead use the "receivedStartSignal" of the PlayerActionHandler interface.
+     * Instead use the "receivedStartSignal" of the ActionHandler interface.
      */
     public void startGame(){
         gameStarted = true;
     }
-
 
     /**
      * This function can be used to send an action taken by the local player to all the other players.
      * @param action The action taken by local player
      * @throws IOException
      */
-    public void send(PlayerAction action) throws IOException {
-        sendActionToAllClients(action, null);
+    @Override
+    public void send(Action action) throws IOException {
+        notifyHandler(action);
+        sendActionToClients(action);
     }
-
 
     /**
      * Game starts.
@@ -134,7 +135,7 @@ public class Server extends CommunicationEntity{
 
         notifyHandlerNewPlayer(playerNames.get(0), 0, true);
         ServerSocket serverSocket = new ServerSocket(getPort());
-        serverSocket.setSoTimeout(3000);
+        serverSocket.setSoTimeout(1000);
         serverSocket.setReuseAddress(true);
 
         // Loop until game starts.
@@ -144,7 +145,7 @@ public class Server extends CommunicationEntity{
                 clients.add(socket);
                 getAndDistributeNewClientsName(socket);
                 //Gdx.app.log(LOGGING_TAG, "Got connection from " + socket.getRemoteAddress());
-            }catch(IOException ex){
+            } catch(IOException ex){
                 //do nothing because the timeout is expected.
             }
         }
@@ -185,7 +186,7 @@ public class Server extends CommunicationEntity{
 
 
     /**
-     * Starts a new Thread that waits for imcoming player actions from the specified socket.
+     * Starts a new Thread that waits for incoming player actions from the specified socket.
      * All incoming actions will be forwarded to all other players and the local user will get a notification.
      * The thread terminates when it receives the stop signal from the client.
      * @param socket Socket of the client.
@@ -199,9 +200,9 @@ public class Server extends CommunicationEntity{
                 try {
                     dataIn = new DataInputStream(socket.getInputStream());
                     while(!gameStopped) {
-                        PlayerAction action = GameCommunicator.receiveAction(dataIn);
-                        if(action.playerId >= 0) {
-                            sendActionToAllClients(action, socket);
+                        Action action = GameCommunicator.receiveAction(dataIn);
+                        if (action.playerId >= 0) {
+                            sendActionToClients(action);
                             notifyHandler(action);
                         }
                     }
@@ -220,27 +221,20 @@ public class Server extends CommunicationEntity{
     /**
      * Sends action to all the clients (except for the client who sent the action).
      * @param action Action to be sent to all clients.
-     * @param receivedFrom Socket of the client that sent the action.
      * @throws IOException
      */
-    private void sendActionToAllClients(PlayerAction action, Socket receivedFrom) throws IOException {
-        for(SendingQueue queue: sendingQueues){
-            queue.send(action); //Todo: exclude the socket that sent the action.
-
+    private void sendActionToClients(Action action) throws IOException {
+        for (int i = 0; i < sendingQueues.size(); i++) {
+            if (i + 1 != action.playerId || action.sendResponseToRequestingClient)
+                sendingQueues.get(i).send(action);
         }
     }
-
-
-    public void sendCollisionToAllClients(int playerId, int playerIdEaten) throws IOException{
-        send(new PlayerAction(playerId,0,0, MovementDirection.NONE,playerIdEaten, 0));
-    }
-
 
     /**
      * Start sending queue threads for all the clients.
      */
     private void startSendingLoops() throws IOException {
-        for(Socket s: clients){
+        for (Socket s: clients){
             SendingQueue queue = new SendingQueue(new DataOutputStream(s.getOutputStream()));
             queue.startSendingLoop();
             sendingQueues.add(queue);
@@ -261,7 +255,7 @@ public class Server extends CommunicationEntity{
      * @throws IOException
      */
     private void sendStartSignalToAllClients() throws IOException {
-        for(int i=0;i<clients.size();++i){
+        for(int i=0; i < clients.size(); ++i){
             Socket s = clients.get(i);
             GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()));
         }

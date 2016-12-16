@@ -31,7 +31,6 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
 
     SharedPreferences prefs;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +49,7 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
         super.onResume();
 
         started = false;
-        cleanup();
+        cleanUp();
 
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
         if (isHost) {
@@ -85,20 +84,18 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
 
                     }
                 }).start();
-
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        cleanup();
-
+        cleanUp();
     }
-    private void cleanup(){
-        if(!started)
-        {
-            if(server != null && !started) {
+
+    private void cleanUp(){
+        if(!started) {
+            if(server != null) {
                 server.stop();
                 server = null;
             }
@@ -115,18 +112,24 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
     @Override
     public void receivedStartSignal() {
         started = true;
+        runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              findViewById(R.id.button_start).setVisibility(View.INVISIBLE);
+                          }
+                      });
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
     }
 
     @Override
-    public void receivedNewPlayer(String name, int id, boolean isLocal) {
-        game.addPlayer(new Player(game, name, isLocal, id));
+    public void receivedNewPlayer(String name, int id, boolean isLocalPlayer) {
+        game.addPlayer(new Player(game, name, isLocalPlayer, id));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ListView listView = (ListView) findViewById(R.id.player_list);
-                arrayAdapter = new ArrayAdapter<Player>(LobbyActivity.this, R.layout.player_list_item, game.getPlayers().toArray());
+                arrayAdapter = new ArrayAdapter<>(LobbyActivity.this, R.layout.player_list_item, game.getPlayers().toArray());
                 listView.setAdapter(arrayAdapter);
             }
         });

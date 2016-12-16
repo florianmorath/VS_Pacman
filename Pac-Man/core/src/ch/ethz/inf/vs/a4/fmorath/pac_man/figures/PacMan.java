@@ -8,7 +8,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
+import java.io.IOException;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.*;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.coins.Coin;
 
 /**
@@ -86,9 +89,21 @@ public class PacMan extends Figure {
     @Override
     public void act(float delta) {
         super.act(delta);
-        for (Coin collectible : round.getCoins())
-            if (collectible.intersects(this))
-                collectible.collect(player);
+
+        if (!player.isLocalPlayer())
+            return;
+
+        Array<Coin> coins = round.getCoins();
+        for (int i = 0; i < coins.size; i++) {
+            Coin coin = coins.get(i);
+            if (coin.intersects(this)) {
+                try {
+                    Game.getInstance().communicator.send(new EatCoinAction(getPlayer().getPlayerId(), false, i));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     @Override
@@ -96,10 +111,6 @@ public class PacMan extends Figure {
         if (currentDirection != MovementDirection.NONE || currentAnimation == animDeath)
             elapsedTime += Gdx.graphics.getDeltaTime();
         batch.draw(currentAnimation.getKeyFrame(elapsedTime, currentAnimation != animDeath), getX(), getY());
-    }
-
-    public void onLargeCoinCollected() {
-        round.onLargeCoinCollected();
     }
 
     public void onDeath() {

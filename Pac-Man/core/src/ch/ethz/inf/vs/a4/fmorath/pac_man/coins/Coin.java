@@ -4,8 +4,10 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 /**
@@ -15,7 +17,7 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 public abstract class Coin {
 
     protected Round round;
-    private Array<Coin> coins;
+    protected Array<Coin> coins;
     private TiledMapTileLayer.Cell cell1, cell2, cell3, cell4;
     protected Rectangle rectangle;
 
@@ -46,9 +48,7 @@ public abstract class Coin {
         cell3.setTile(null);
         cell4.setTile(null);
         coins.removeValue(this, true);
-        if (coins.size == 0 && round.game.isServer()) {
-            round.game.broadcastPacManWon();
+        if (coins.size == 0)
             round.end(true);
-        }
     }
 }

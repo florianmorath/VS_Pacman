@@ -1,9 +1,6 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man;
 
-import java.util.Comparator;
-
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 /**
  * Created by linus on 07.12.2016.
@@ -15,8 +12,10 @@ public class Player implements Comparable<Player> {
     public int getPlayerId(){
         return playerId;
     }
+
     private Game game;
     public String name;
+
     private boolean isLocalPlayer;
     public boolean isLocalPlayer() {
         return isLocalPlayer;
@@ -31,9 +30,9 @@ public class Player implements Comparable<Player> {
         figure.setPlayer(this);
     }
 
-    public boolean isPacMan(){
+    /*public boolean isPacMan(){
         return figure instanceof PacMan;
-    }
+    }*/
 
     private int score = 0;
     public int getScore() {

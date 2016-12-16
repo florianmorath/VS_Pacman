@@ -23,6 +23,6 @@ public class LargeCoin extends Coin {
         super.collect(player);
         player.increaseScore(50);
         if (player.getFigure() instanceof PacMan)
-            ((PacMan) player.getFigure()).onLargeCoinCollected();
+            round.onLargeCoinCollected();
     }
 }

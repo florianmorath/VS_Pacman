@@ -34,7 +34,7 @@ public enum MovementDirection {
      * @param i An int value
      * @return The direction corresponding to the value of i. If i has no valid mapping to an enum element, then it returns LEFT.
      */
-    public static MovementDirection createDirectionFromInt(int i) {
+    public static MovementDirection getDirection(int i) {
         switch (i){
             case 0: return UP;
             case 1: return RIGHT;
@@ -42,6 +42,18 @@ public enum MovementDirection {
             case 3: return LEFT;
             default: return NONE;
         }
+    }
+
+    public static MovementDirection getDirection(Vector2 vector) {
+        float angle = vector.angle();
+        if (45 < angle && angle <= 135)
+            return LEFT;
+        else if (135 < angle && angle <= 215)
+            return DOWN;
+        else if (215 < angle && angle <= 305)
+            return RIGHT;
+        else
+            return UP;
     }
 
     /**

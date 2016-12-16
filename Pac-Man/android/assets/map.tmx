@@ -64,9 +64,9 @@
   <object id="104" x="108" y="4" width="8" height="32"/>
   <object id="105" x="84" y="100" width="4" height="32"/>
   <object id="106" x="136" y="100" width="4" height="32"/>
-  <object id="107" x="84" y="100" width="20" height="4"/>
-  <object id="108" x="120" y="100" width="20" height="4"/>
-  <object id="109" x="84" y="128" width="56" height="4"/>
+  <object id="107" x="84" y="100" width="20" height="8"/>
+  <object id="108" x="120" y="100" width="20" height="8"/>
+  <object id="109" x="84" y="124" width="56" height="8"/>
   <object id="128" x="220" y="156" width="4" height="88"/>
   <object id="129" x="0" y="156" width="4" height="88"/>
  </objectgroup>

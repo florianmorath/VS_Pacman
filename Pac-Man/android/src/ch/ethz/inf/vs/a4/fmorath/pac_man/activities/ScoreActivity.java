@@ -52,15 +52,8 @@ public class ScoreActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        startMainActivity();
-    }
-
-    public void onMainMenuButtonClick(View view) {
-        startMainActivity();
-    }
-
-    private void startMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        // TODO: Disconnect client from server / stop server
     }
 }

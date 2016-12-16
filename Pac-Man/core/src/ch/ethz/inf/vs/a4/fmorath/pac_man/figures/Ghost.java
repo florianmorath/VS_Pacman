@@ -14,8 +14,10 @@ import org.w3c.dom.css.Rect;
 
 import java.io.IOException;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatPlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
 
 /**
@@ -91,15 +93,15 @@ public class Ghost extends Figure {
     @Override
     public void act(float delta) {
         super.act(delta);
-        if(round.game.isServer()) {
+        if(Game.getInstance().isServer()) {
             if (intersects(pacMan)) {
-                if (isVulnerable) {
-                    round.game.broadcastCollision(pacMan.getPlayer().getPlayerId(), getPlayer().getPlayerId());
-                    onEaten();
-                } else {
-                    round.game.broadcastCollision(getPlayer().getPlayerId(), pacMan.getPlayer().getPlayerId());
-                    pacMan.onDeath();
-                    round.end(false);
+                try {
+                    if (isVulnerable)
+                        Game.getInstance().communicator.send(new EatPlayerAction(pacMan.getPlayer().getPlayerId(), true, getPlayer().getPlayerId()));
+                    else
+                        Game.getInstance().communicator.send(new EatPlayerAction(getPlayer().getPlayerId(), true, pacMan.getPlayer().getPlayerId()));
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }

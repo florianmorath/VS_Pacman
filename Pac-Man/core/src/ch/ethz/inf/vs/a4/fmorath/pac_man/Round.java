@@ -45,12 +45,11 @@ public class Round extends Stage {
     private final int largeCoinsLayerId = 5;
     private final int largeCoinsCollisionLayerId = 6;
 
-    public Game game;
+    private Game game;
     private int roundNumber;
     private Array<Player> players;
     private PacMan pacMan;
     private Figure[] figures;
-
 
     private boolean isPaused = true;
 

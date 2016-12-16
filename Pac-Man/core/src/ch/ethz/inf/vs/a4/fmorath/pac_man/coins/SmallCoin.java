@@ -4,8 +4,10 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
 
 /**
  * Created by linus on 05.12.2016.

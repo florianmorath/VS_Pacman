@@ -10,11 +10,14 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Player;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Round;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
 
 /**
  * Created by linus on 04.12.2016.
@@ -22,17 +25,27 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
 
 public abstract class Figure extends Actor {
 
-    private static final int CORNER_TOLERANCE = 2;
+    //private static final int CORNER_THRESHOLD = 2; // TODO: Set to getSpeed() * delta;
     protected static final float FRAME_DURATION = 0.05f;
     private static final float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
     protected float getSpeed() {
         return SPEED;
     }
 
-    private Vector2 newPosition = null;
     protected MovementDirection currentDirection = MovementDirection.NONE;
     private MovementDirection newDirection = MovementDirection.NONE;
+
     protected float elapsedTime = 0f;
+
+    private ArrayDeque<PosDir> catchUpQueue = new ArrayDeque<PosDir>();
+    private class PosDir {
+        public Vector2 position;
+        public MovementDirection direction;
+        public PosDir(Vector2 position, MovementDirection direction) {
+            this.position = position;
+            this.direction = direction;
+        }
+    }
 
     protected Player player;
     public Player getPlayer() {
@@ -53,17 +66,6 @@ public abstract class Figure extends Actor {
     protected abstract void initAnimations();
     protected abstract void updateRepresentation();
 
-    public void setDirPos(MovementDirection newDirection,Vector2 position){
-        synchronized (this){
-            this.newDirection = newDirection;
-            this.newPosition = position;
-        }
-    }
-
-    public boolean positionChangeAvailable(){
-        return newPosition != null && newDirection != MovementDirection.NONE;
-    }
-
     public Rectangle getRectangle() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
@@ -76,21 +78,31 @@ public abstract class Figure extends Actor {
 
     @Override
     public void act(float delta) {
-        updateFromReceivedData();
-        tryToChangeDirection(delta);
-        tryToMove(delta);
+        if (!catchUpQueue.isEmpty())
+            catchUp(delta);
+        else {
+            tryToChangeDirection(delta);
+            tryToMove(delta);
+        }
     }
 
-    private void updateFromReceivedData(){
-        Vector2 position= null;
-        synchronized (this){
-            if(positionChangeAvailable()){
-                position = newPosition;
-                newPosition = null;
-            }
-        }
-        if(position != null)
-            setPosition(position.x,position.y);
+    private void catchUp(float delta) {
+        Vector2 targetPosition = catchUpQueue.getFirst().position;
+
+        float distance = 2 * getSpeed() * delta;
+        Vector2 position = new Vector2(getX(), getY());
+        Vector2 direction = (targetPosition.cpy().sub(position)).nor();
+
+        currentDirection = MovementDirection.getDirection(direction);
+        updateRepresentation();
+
+        position.add(direction.scl(distance));
+        if ((targetPosition.dst(position) <= distance)) {
+            setPosition(targetPosition.x, targetPosition.y);
+            currentDirection = catchUpQueue.remove().direction;
+            updateRepresentation();
+        } else
+            setPosition(position.x, position.y);
     }
 
     private void tryToChangeDirection(float delta) {
@@ -109,24 +121,43 @@ public abstract class Figure extends Actor {
             if (Intersector.overlaps(wall, player)) {
                 noCollision = false;
 
+                float maxDistance = delta * getSpeed();
                 if (direction.x != 0) {
-                    if (Math.abs(wall.y + wall.height - position.y) < CORNER_TOLERANCE)
+                    if (Math.abs(wall.y + wall.height - position.y) <= maxDistance)
                         newPosition.y = wall.y + wall.height;
-                    else if (Math.abs(position.y + getHeight() - wall.y) < CORNER_TOLERANCE)
+                    else if (Math.abs(position.y + getHeight() - wall.y) <= maxDistance)
                         newPosition.y = wall.y - getHeight();
                 } else if (direction.y != 0) {
-                    if (Math.abs(wall.x + wall.width - position.x) < CORNER_TOLERANCE)
+                    if (Math.abs(wall.x + wall.width - position.x) <= maxDistance)
                         newPosition.x = wall.x + wall.width;
-                    else if (Math.abs(position.x + getWidth() - wall.x) < CORNER_TOLERANCE)
+                    else if (Math.abs(position.x + getWidth() - wall.x) <= maxDistance)
                         newPosition.x = wall.x - getWidth();
                 }
             }
         }
 
         if ((noCollision || !newPosition.equals(position)) && canMoveToPosition(newPosition.add(direction.scl(distance)), newDirection)) {
-            setPosition(newPosition.x, newPosition.y);
-            currentDirection = newDirection;
-            updateRepresentation();
+            MovementAction action = new MovementAction(getPlayer().getPlayerId(), false, newPosition.x, newPosition.y, newDirection);
+            try {
+                Game.getInstance().communicator.send(action);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void updatePositionAndDirection(MovementAction action) {
+        synchronized (this) {
+            Vector2 position = new Vector2(action.positionX, action.positionY);
+            Vector2 lastPosition = !catchUpQueue.isEmpty() ? catchUpQueue.getLast().position : new Vector2(getX(), getY());
+            if (player.isLocalPlayer() || (lastPosition.cpy().dst(position) > round.getWidth() / 2)) {
+                if (!player.isLocalPlayer())
+                    catchUpQueue.clear();
+                setPosition(position.x, position.y);
+                currentDirection = action.newDirection;
+                updateRepresentation();
+            } else
+                 catchUpQueue.add(new PosDir(new Vector2(action.positionX, action.positionY), action.newDirection));
         }
     }
 
@@ -178,34 +209,25 @@ public abstract class Figure extends Actor {
     private class MovementGestureAdapter extends GestureDetector.GestureAdapter {
         @Override
         public boolean fling(float velocityX, float velocityY, int button) {
-            MovementDirection detectedDirection;
             if (Math.abs(velocityX) >= Math.abs(velocityY)) {
                 // X dominated
                 if (velocityX >= 0) {
                     // Right fling
-                    detectedDirection = MovementDirection.RIGHT;
+                    newDirection = MovementDirection.RIGHT;
                 } else {
                     // Left fling
-                    detectedDirection = MovementDirection.LEFT;
+                    newDirection = MovementDirection.LEFT;
                 }
             } else {
                 // Y dominated
                 if (velocityY >= 0) {
                     //Down fling
-                    detectedDirection = MovementDirection.DOWN;
+                    newDirection = MovementDirection.DOWN;
                 } else {
                     // Up fling
-                    detectedDirection = MovementDirection.UP;
+                    newDirection = MovementDirection.UP;
                 }
             }
-            PlayerAction action = new PlayerAction(player.getPlayerId(), getX(), getY(), detectedDirection);
-            try {
-                round.game.communicator.send(action);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            newDirection = detectedDirection;
-            updateRepresentation();
 
             return true;
         }

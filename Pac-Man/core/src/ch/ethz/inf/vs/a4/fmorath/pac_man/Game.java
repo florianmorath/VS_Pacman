@@ -6,40 +6,32 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 
-import java.io.IOException;
-
-import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Client;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatPlayerAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.CommunicationEntity;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerAction;
-import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.PlayerActionHandler;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.ActionHandler;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Ghost;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 
-public class Game extends ApplicationAdapter implements PlayerActionHandler{
+public class Game extends ApplicationAdapter implements ActionHandler {
 
-
-	private boolean isServer = false;
 	public CommunicationEntity communicator;
-	public void setCommunicator(Server server){
-		communicator = server;
-		isServer = true;
+	public void setCommunicator(CommunicationEntity communicator){
+		this.communicator = communicator;
 	}
-	public void setCommunicator(Client client){
-		this.communicator = client;
-
-	}
-
 	public boolean isServer(){
-		return isServer;
+		return communicator instanceof Server;
 	}
 
     private static Game instance;
@@ -91,7 +83,6 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
 
 	@Override
 	public void create () {
-
 		map = new TmxMapLoader().load("map.tmx");
 		worldWidth  = 4 * map.getProperties().get("width",  Integer.class);
 		worldHeight = 4 * map.getProperties().get("height", Integer.class);
@@ -145,54 +136,25 @@ public class Game extends ApplicationAdapter implements PlayerActionHandler{
         }
 	}
 
-
-	public void broadcastCollision(int playerIdEats, int playerIdEaten){
-		if(!isServer){
-			throw new RuntimeException("only server can broadcast collisions");
-		}
-		Server server = (Server) communicator;
-		try {
-			server.sendCollisionToAllClients(playerIdEats, playerIdEaten);
-		}catch(IOException ex){
-			ex.printStackTrace();
-		}
-	}
-
-	public void broadcastPacManWon(){
-		int pacManId = -1;
-		for(int i = 0; i<players.size; ++i){
-			if(players.get(i).isPacMan()){
-				pacManId = players.get(i).getPlayerId();
-			}
-		}
-		broadcastCollision(pacManId,pacManId);
-	}
-
-
 	@Override
-	public void updatePlayerFigure(PlayerAction action) {
-		if(action.hasEatenPlayer()){
-			Player eaten = players.get(action.eatenPlayerId);
-			if(eaten.isPacMan()){
-				if(action.playerId == action.eatenPlayerId){
-					// pac man collected all coins
-					currentRound.end(true);
-				}else {
-					PacMan pacman = (PacMan) eaten.getFigure();
-					pacman.onDeath();
-					currentRound.end(false);
-				}
-			}else{
-				Ghost eatenGhost = (Ghost) eaten.getFigure();
-				eatenGhost.onEaten();
-			}
-		}else {
-			Player p = players.get(action.playerId);
-			if(!p.isLocalPlayer()){
-				while(p.getFigure().positionChangeAvailable()){}
-				p.getFigure().setDirPos(action.newDirection, new Vector2(action.positionX, action.positionY));
-			}
-		}
-
+	public void handleAction(Action action) {
+        Player player = players.get(action.playerId);
+        switch (action.type) {
+            case Movement:
+                player.getFigure().updatePositionAndDirection((MovementAction) action);
+                break;
+            case EatCoin:
+                int index = ((EatCoinAction) action).eatenCoinIndex;
+                currentRound.getCoins().get(index).collect(player);
+                break;
+            case EatPlayer:
+                Figure figure = players.get(((EatPlayerAction) action).eatenPlayerId).getFigure();
+                if (figure instanceof PacMan) {
+                    ((PacMan) figure).onDeath();
+                    currentRound.end(false);
+                } else
+                    ((Ghost) figure).onEaten();
+                break;
+        }
 	}
 }

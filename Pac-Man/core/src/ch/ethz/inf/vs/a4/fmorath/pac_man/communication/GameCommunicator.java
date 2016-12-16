@@ -1,13 +1,15 @@
 package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
 
-import com.badlogic.gdx.net.Socket;
-import com.badlogic.gdx.utils.DataOutput;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.ActionType;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatPlayerAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * Created by johannes on 22.11.16.
@@ -39,24 +41,37 @@ abstract class GameCommunicator{
         }
     }
 
-
-
     /**
      * Send an user action to a player.
      * @param stream Output stream to the socket of the player
      * @param action The action to be sent
      * @throws IOException
      */
-    public static void sendAction(DataOutputStream stream, PlayerAction action) throws IOException {
+    public static void sendAction(DataOutputStream stream, Action action) throws IOException {
         if(stream == null || action.playerId < 0){
             throw new IllegalArgumentException();
         }
+
+        stream.writeInt(action.type.getValue());
         stream.writeInt(action.playerId);
-        stream.writeFloat(action.positionX);
-        stream.writeFloat(action.positionY);
-        stream.writeInt(action.newDirection.getValue());
-        stream.writeInt(action.eatenPlayerId);
-        stream.writeInt(action.currentScore);
+        stream.writeBoolean(action.sendResponseToRequestingClient);
+
+        switch (action.type) {
+            case Movement:
+                MovementAction movementAction = (MovementAction) action;
+                stream.writeFloat(movementAction.positionX);
+                stream.writeFloat(movementAction.positionY);
+                stream.writeInt(movementAction.newDirection.getValue());
+                break;
+            case EatCoin:
+                EatCoinAction eatCoinAction = (EatCoinAction) action;
+                stream.writeInt(eatCoinAction.eatenCoinIndex);
+                break;
+            case EatPlayer:
+                EatPlayerAction eatPlayerAction = (EatPlayerAction) action;
+                stream.writeInt(eatPlayerAction.eatenPlayerId);
+                break;
+        }
     }
 
 
@@ -66,17 +81,30 @@ abstract class GameCommunicator{
      * @return The new action.
      * @throws IOException
      */
-    public static PlayerAction receiveAction(DataInputStream stream) throws IOException {
+    public static Action receiveAction(DataInputStream stream) throws IOException {
         if(stream == null){
             throw new IllegalArgumentException();
         }
+
+        ActionType actionType = ActionType.getType(stream.readInt());
         int playerId = stream.readInt();
-        float posX = stream.readFloat();
-        float posY = stream.readFloat();
-        MovementDirection newDirection = MovementDirection.createDirectionFromInt(stream.readInt());
-        int eatenPlayerId = stream.readInt();
-        int currentScore = stream.readInt();
-        return new PlayerAction(playerId,posX,posY,newDirection,eatenPlayerId, currentScore);
+        boolean sendResponseToRequestingClient = stream.readBoolean();
+
+        switch (actionType) {
+            case Movement:
+                float posX = stream.readFloat();
+                float posY = stream.readFloat();
+                MovementDirection newDirection = MovementDirection.getDirection(stream.readInt());
+                return new MovementAction(playerId, sendResponseToRequestingClient, posX, posY, newDirection);
+            case EatCoin:
+                int eatenCoinIndex = stream.readInt();
+                return new EatCoinAction(playerId, sendResponseToRequestingClient, eatenCoinIndex);
+            case EatPlayer:
+                int eatenPlayerId = stream.readInt();
+                return new EatPlayerAction(playerId, sendResponseToRequestingClient, eatenPlayerId);
+            default:
+                return null;
+        }
     }
 
     /**

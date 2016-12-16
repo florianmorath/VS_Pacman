@@ -36,6 +36,6 @@ public class GameActivity extends AndroidApplication {
 	public void onBackPressed() {
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
-		// TODO: Disconnect client from server
+		// TODO: Disconnect client from server / stop server
 	}
 }

@@ -5,11 +5,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.ActionType;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.DisconnectPlayerAction;
 
 /**
  * Created by johannes on 22.11.16.
@@ -47,7 +50,6 @@ public class Server extends CommunicationEntity{
         if(gameStopped){
             throw new RuntimeException("Cannot start server, after it was stopped.");
         }
-        //Gdx.app.log(LOGGING_TAG,"Start server.");
         new Thread(new Runnable(){
 
             @Override
@@ -69,19 +71,24 @@ public class Server extends CommunicationEntity{
      * Initiate server shutdown by setting the "gameStopped" flag, stopping all the SendingQueues and sending the stop signal to all clients.
      */
     public void stop(){
-        gameStarted = true;
-        gameStopped = true;
         for(SendingQueue queue: sendingQueues){
             queue.stop();
         }
         for(Socket s: clients){
             try {
-                GameCommunicator.sendStopSignal(new DataOutputStream(s.getOutputStream()));
+                if(!gameStarted){
+                    GameCommunicator.sendPlayerDisconnected(new DataOutputStream(s.getOutputStream()), 0);
+                }
+                else {
+                    GameCommunicator.sendStopSignal(new DataOutputStream(s.getOutputStream()));
+                }
                 notifyStopHandler();
             } catch (IOException e) {
                 e.printStackTrace(); //Todo: add proper exception handling.
             }
         }
+        gameStarted = true;
+        gameStopped = true;
     }
 
     /**
@@ -114,8 +121,6 @@ public class Server extends CommunicationEntity{
      */
     private void onGameStarts() throws IOException {
 
-        //Gdx.app.log(LOGGING_TAG,"Start game.");
-        startReceivingLoops();
         startSendingLoops();
         try {
             sendStartSignalToAllClients();
@@ -144,9 +149,10 @@ public class Server extends CommunicationEntity{
                 Socket socket = serverSocket.accept();
                 clients.add(socket);
                 getAndDistributeNewClientsName(socket);
-                //Gdx.app.log(LOGGING_TAG, "Got connection from " + socket.getRemoteAddress());
-            } catch(IOException ex){
+            }catch (SocketTimeoutException ex){
                 //do nothing because the timeout is expected.
+            }catch(IOException ex){
+                ex.printStackTrace();
             }
         }
 
@@ -175,6 +181,7 @@ public class Server extends CommunicationEntity{
                         playerNames.add(newName);
                     }
                     notifyHandlerNewPlayer(newName, newId, false);
+                    receiveAndDistributeCommandsFrom(socket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -198,12 +205,16 @@ public class Server extends CommunicationEntity{
             public void run() {
                 DataInputStream dataIn;
                 try {
+                    boolean disconnected = false;
                     dataIn = new DataInputStream(socket.getInputStream());
-                    while(!gameStopped) {
+                    while(!gameStopped && !disconnected) {
                         Action action = GameCommunicator.receiveAction(dataIn);
-                        if (action.playerId >= 0) {
+                        if (action.type != ActionType.DisconnectPlayer) {
                             sendActionToClients(action);
                             notifyHandler(action);
+                        }else{
+                            disconnected = true;
+                            onPlayerDisconnected(action.playerId);
                         }
                     }
                     socket.close();
@@ -211,11 +222,34 @@ public class Server extends CommunicationEntity{
                     //Lost connection to client
                     e.printStackTrace();
                 }
-                //socket.dispose();
-                //Gdx.app.log(LOGGING_TAG,"Stopping ReceiveAndDistribute thread and closing socket.");
 
             }
         }).start();
+    }
+
+    private void onPlayerDisconnected(int id) {
+        if (!gameStopped) {
+            Socket socket;
+            synchronized (this) {
+                socket = clients.remove(id - 1);
+                playerNames.remove(id);
+                for (int i = 0; i < clients.size(); ++i) {
+                    try {
+                        GameCommunicator.sendPlayerDisconnected(new DataOutputStream(clients.get(i).getOutputStream()), id);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            try {
+                GameCommunicator.sendStartSignal(new DataOutputStream(socket.getOutputStream()));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+
+            notifyPlayerLeft(id);
+        }
     }
 
     /**
@@ -234,21 +268,13 @@ public class Server extends CommunicationEntity{
      * Start sending queue threads for all the clients.
      */
     private void startSendingLoops() throws IOException {
-        for (Socket s: clients){
+        for (Socket s : clients) {
             SendingQueue queue = new SendingQueue(new DataOutputStream(s.getOutputStream()));
             queue.startSendingLoop();
             sendingQueues.add(queue);
         }
     }
 
-    /**
-     * Start receiving thread for every client.
-     */
-    private void startReceivingLoops(){
-        for(Socket s: clients){
-            receiveAndDistributeCommandsFrom(s);
-        }
-    }
 
     /**
      * Method to send the start signal to all Clients.

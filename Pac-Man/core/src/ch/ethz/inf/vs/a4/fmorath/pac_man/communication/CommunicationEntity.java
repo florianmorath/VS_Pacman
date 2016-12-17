@@ -83,5 +83,11 @@ abstract public class CommunicationEntity {
         startSignalHandler.receivedNewPlayer(name, id, isLocalPlayer);
     }
 
+    protected void notifyPlayerLeft(int id){
+        startSignalHandler.receivedPlayerDisconnected(id);
+    }
+
     public abstract void send(Action action) throws IOException;
+
+    public abstract void stop() throws  IOException;
 }

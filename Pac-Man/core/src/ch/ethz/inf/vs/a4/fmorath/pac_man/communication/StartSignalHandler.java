@@ -13,4 +13,6 @@ public interface StartSignalHandler {
 
     void receivedNewPlayer(String name, int id, boolean isLocal);
 
+    void receivedPlayerDisconnected(int id);
+
 }

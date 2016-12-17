@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -50,6 +51,7 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
 
         started = false;
         cleanUp();
+        game = new Game();
 
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
         if (isHost) {
@@ -99,9 +101,16 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
                 server.stop();
                 server = null;
             }
-            game = new Game();
+            game = null;
+
+            if(client != null){
+                try {
+                    client.stop();
+                }catch (IOException ex){
+                    ex.printStackTrace();
+                }
+            }
             client = null;
-            game.removeAllPlayers();
         }
     }
 
@@ -124,7 +133,29 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
 
     @Override
     public void receivedNewPlayer(String name, int id, boolean isLocalPlayer) {
-        game.addPlayer(new Player(game, name, isLocalPlayer, id));
+        synchronized (this) {
+            game.addPlayer(new Player(game, name, isLocalPlayer, id));
+        }
+        updateGui();
+    }
+
+    @Override
+    public void receivedPlayerDisconnected(int id) {
+        Game newGame = new Game();
+        newGame.setCommunicator(client == null? server : client);
+        synchronized (this) {
+            for (int i = 0; i < game.getNumPlayers(); ++i) {
+                if (i != id) {
+                    Player p = game.getPlayers().get(i);
+                    newGame.addPlayer(new Player(newGame, p.name, p.isLocalPlayer(), i<id? i : i-1));
+                }
+            }
+            game = newGame;
+        }
+        updateGui();
+    }
+
+    private void updateGui(){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -133,5 +164,6 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
                 listView.setAdapter(arrayAdapter);
             }
         });
+
     }
 }

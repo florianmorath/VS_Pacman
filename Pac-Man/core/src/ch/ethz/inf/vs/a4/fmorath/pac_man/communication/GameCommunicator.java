@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man.communication;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.ActionType;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.DisconnectPlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatPlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
@@ -27,6 +28,7 @@ abstract class GameCommunicator{
         public final String name;
         public final int id;
         public final boolean started;
+        public final boolean disconnect;
 
         /**
          * Constructor
@@ -34,10 +36,11 @@ abstract class GameCommunicator{
          * @param id Id of the new Player.
          * @param started True if start signal was received, then the other two fields are meaningless.
          */
-        public NameIdStart(String name, int id, boolean started){
+        public NameIdStart(String name, int id, boolean started, boolean disconnect){
             this.name = name;
             this.id = id;
             this.started = started;
+            this.disconnect = disconnect;
         }
     }
 
@@ -71,6 +74,8 @@ abstract class GameCommunicator{
                 EatPlayerAction eatPlayerAction = (EatPlayerAction) action;
                 stream.writeInt(eatPlayerAction.eatenPlayerId);
                 break;
+            case DisconnectPlayer:
+                break;
         }
     }
 
@@ -102,6 +107,8 @@ abstract class GameCommunicator{
             case EatPlayer:
                 int eatenPlayerId = stream.readInt();
                 return new EatPlayerAction(playerId, sendResponseToRequestingClient, eatenPlayerId);
+            case DisconnectPlayer:
+                return new DisconnectPlayerAction(playerId);
             default:
                 return null;
         }
@@ -136,6 +143,17 @@ abstract class GameCommunicator{
         stream.writeBoolean(false);
         stream.writeUTF(name);
         stream.writeByte(playerId);
+        stream.writeBoolean(false);
+    }
+
+    public static void sendPlayerDisconnected(DataOutputStream stream, int playerId) throws IOException {
+        if(stream == null){
+            throw new IllegalArgumentException();
+        }
+        stream.writeBoolean(false);
+        stream.writeUTF("");
+        stream.writeByte(playerId);
+        stream.writeBoolean(true);
     }
 
     /**
@@ -176,12 +194,13 @@ abstract class GameCommunicator{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        if (stream.readByte() == 1) {
-            return new NameIdStart(null, -1, true);
+        if (stream.readBoolean()) {
+            return new NameIdStart(null, -1, true, false);
         }
         String name = stream.readUTF();
         int id = stream.readByte();
-        return new NameIdStart(name, id, false);
+        boolean disconnect = stream.readBoolean();
+        return new NameIdStart(name, id, false, disconnect);
     }
 
     /**
@@ -193,7 +212,7 @@ abstract class GameCommunicator{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        stream.writeByte(1);
+        stream.writeBoolean(true);
     }
 
 

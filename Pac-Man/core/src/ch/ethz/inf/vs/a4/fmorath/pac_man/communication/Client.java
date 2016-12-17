@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.Socket;
 
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.ActionType;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.DisconnectPlayerAction;
 
 
 /**
@@ -23,6 +25,7 @@ public class Client extends CommunicationEntity {
     private SendingQueue sendingQueue;
     private int localId = -1;
     private String myName;
+    private boolean stopped = false;
 
     /**
      * Constructor.
@@ -49,17 +52,31 @@ public class Client extends CommunicationEntity {
         do {
             GameCommunicator.NameIdStart newPlayer = GameCommunicator.waitForStartSignalAndNames(in);
             started = newPlayer.started;
-            if(!started){
+            if(!started && !stopped){
                 if(localId < 0){
                     localId = newPlayer.id;
                 }else {
-                    notifyHandlerNewPlayer(newPlayer.name, newPlayer.id, newPlayer.id == localId);
+                    if(newPlayer.disconnect){
+                        if(newPlayer.id == 0) { //server disconnects
+                            stopped = true;
+                            started = true;
+                        }
+                        notifyPlayerLeft(newPlayer.id);
+                        if(newPlayer.id < localId){
+                            localId--;
+                        }
+                    }else {
+                        notifyHandlerNewPlayer(newPlayer.name, newPlayer.id, newPlayer.id == localId);
+                    }
                 }
             }
         }while(!started);
 
-        startReceiveActionLoop();
-        notifyStartHandlerStart();
+        if(!stopped) {
+
+            startReceiveActionLoop();
+            notifyStartHandlerStart();
+        }
 
     }
 
@@ -105,11 +122,14 @@ public class Client extends CommunicationEntity {
                     boolean stopped = false;
                     while(!stopped) {
                         Action action = GameCommunicator.receiveAction(dataIn);
-                        if(action.playerId < 0){ //received stop signal
-                            sendingQueue.stop();
-                            GameCommunicator.sendStopSignal(out); //This helps the server to properly shut down its threads.
-                            stopped = true;
-                            notifyStopHandler();
+                        if(action.type == ActionType.DisconnectPlayer){ //received stop signal
+                            if(action.playerId == localId) {
+                                GameCommunicator.sendStopSignal(out); //This helps the server to properly shut down its threads.
+                                stop();
+                                notifyStopHandler();
+                            }else{
+                                notifyPlayerLeft(action.playerId);
+                            }
                         } else {
                             notifyHandler(action);
                         }
@@ -120,6 +140,14 @@ public class Client extends CommunicationEntity {
 
             }
         }).start();
+    }
+
+    @Override
+    public void stop() throws IOException {
+        if(localId > -1)
+            GameCommunicator.sendAction(out, new DisconnectPlayerAction(localId));
+        sendingQueue.stop();
+        stopped = true;
     }
 
 

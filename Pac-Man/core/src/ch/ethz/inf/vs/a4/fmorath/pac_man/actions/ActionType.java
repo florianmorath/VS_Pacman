@@ -6,7 +6,7 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man.actions;
 
 public enum ActionType {
 
-    Movement(0), EatCoin(1), EatPlayer(2);
+    Movement(0), EatCoin(1), EatPlayer(2), DisconnectPlayer(3);
 
     private final int value;
 
@@ -22,6 +22,8 @@ public enum ActionType {
         switch (value) {
             case 0: return Movement;
             case 1: return EatCoin;
+            case 2: return EatPlayer;
+            case 3: return DisconnectPlayer;
             default: return EatPlayer;
         }
     }

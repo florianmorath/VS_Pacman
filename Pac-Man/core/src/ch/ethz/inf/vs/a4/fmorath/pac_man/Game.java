@@ -57,6 +57,9 @@ public class Game extends ApplicationAdapter implements ActionHandler {
     public int getNumPlayers() {
         return players.size;
     }
+	public void removePlayer(int id){
+		players.removeIndex(id);
+	}
 	public void removeAllPlayers(){
 		players = new Array<Player>();
 	}

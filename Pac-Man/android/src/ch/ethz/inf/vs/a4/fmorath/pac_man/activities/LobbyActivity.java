@@ -115,12 +115,14 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
     @Override
     public void receivedStartSignal() {
         started = true;
-        runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              findViewById(R.id.button_start).setVisibility(View.INVISIBLE);
-                          }
-                      });
+        if (server != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    findViewById(R.id.button_start).setVisibility(View.INVISIBLE);
+                }
+            });
+        }
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
     }

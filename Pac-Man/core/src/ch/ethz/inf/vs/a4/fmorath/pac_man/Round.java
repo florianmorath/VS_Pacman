@@ -3,7 +3,6 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -58,8 +57,7 @@ public class Round extends Stage {
 
     private BitmapFont font;
     private Music startSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/start.wav"));
-    private Music sirenSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/siren.mp3"));
-    private Music fastSirenSound = Gdx.audio.newMusic(Gdx.files.internal("sounds/fast_siren.mp3"));
+    private Music siren;
     private Sound wakaSound1 = Gdx.audio.newSound(Gdx.files.internal("sounds/waka1.mp3"));
     private Sound wakaSound2 = Gdx.audio.newSound(Gdx.files.internal("sounds/waka2.mp3"));
     private Sound eatGhostSound = Gdx.audio.newSound(Gdx.files.internal("sounds/eat_ghost.wav"));
@@ -75,7 +73,7 @@ public class Round extends Stage {
         return coins;
     }
 
-    private float largeCoinCountdown;
+    private float largeCoinCountdown = -1;
     private int multiplier;
 
     public Round(Game game, int roundNumber, Viewport viewport, Array<Player> players, boolean playStartSound) {
@@ -112,20 +110,17 @@ public class Round extends Stage {
             i = (i + 1) % players.size;
         }
 
-        sirenSound.setLooping(true);
-        fastSirenSound.setLooping(true);
-
         if (playStartSound) {
             startSound.play();
             startSound.setOnCompletionListener(new Music.OnCompletionListener() {
                 @Override
                 public void onCompletion(Music music) {
-                    sirenSound.play();
+                    playSiren(false);
                     isPaused = false;
                 }
             });
         } else {
-            sirenSound.play();
+            playSiren(false);
             isPaused = false;
         }
     }
@@ -134,10 +129,14 @@ public class Round extends Stage {
     public void act(float delta) {
         if (!isPaused) {
             super.act(delta);
-            if (largeCoinCountdown > 0)
+            if (largeCoinCountdown > 0) {
                 largeCoinCountdown -= delta;
-            else
+                if (largeCoinCountdown < 0)
+                    largeCoinCountdown = 0;
+            } else if (largeCoinCountdown == 0) {
                 onLargeCoinEnded();
+                largeCoinCountdown = -1;
+            }
         }
     }
 
@@ -153,7 +152,7 @@ public class Round extends Stage {
         font.draw(batch, "HIGH SCORE",                                          113, 271, 0, Align.center, false);
         font.draw(batch, Integer.toString(game.getHighScore()),                 113, 262, 0, Align.center, false);
 
-        if (largeCoinCountdown > 0)
+        if (largeCoinCountdown >= 0)
             font.draw(batch, Integer.toString((int) largeCoinCountdown),        220, 262, 0, Align.right,  false);
 
         if (startSound.isPlaying()) {
@@ -171,22 +170,20 @@ public class Round extends Stage {
     }
 
     public void onLargeCoinCollected() {
-        setGhostsVulnerability(true);
+        setGhostsVulnerable(true);
         largeCoinCountdown = LARGE_COIN_DURATION;
         multiplier = 1;
-        sirenSound.stop();
-        fastSirenSound.play();
+        stopSiren();
+        playSiren(true);
     }
 
     private void onLargeCoinEnded() {
-        if(fastSirenSound.isPlaying()) {
-            setGhostsVulnerability(false);
-            fastSirenSound.stop();
-            sirenSound.play();
-        }
+        setGhostsVulnerable(false);
+        stopSiren();
+        playSiren(false);
     }
 
-    private void setGhostsVulnerability(boolean value) {
+    private void setGhostsVulnerable(boolean value) {
         for (Figure figure : figures)
             if (figure instanceof Ghost)
                 ((Ghost) figure).setVulnerable(value);
@@ -198,13 +195,9 @@ public class Round extends Stage {
     }
 
     public void end(boolean pacManWon) {
-        if(game.communicator.isStopped()){
-            game.endGame();
-        }
+        stopSiren();
 
         if (pacManWon) {
-            sirenSound.stop();
-            fastSirenSound.stop();
             game.endRound();
             return;
         }
@@ -215,18 +208,19 @@ public class Round extends Stage {
         deathSound.setOnCompletionListener(new Music.OnCompletionListener() {
             @Override
             public void onCompletion(Music music) {
-                sirenSound.stop();
-                fastSirenSound.stop();
                 game.endRound();
             }
         });
+
+        if(game.communicator.isStopped()){
+            game.endGame();
+        }
     }
 
     @Override
     public void dispose() {
         startSound.dispose();
-        sirenSound.dispose();
-        fastSirenSound.dispose();
+        siren.dispose();
         wakaSound1.dispose();
         wakaSound2.dispose();
         eatGhostSound.dispose();
@@ -255,6 +249,21 @@ public class Round extends Stage {
             Rectangle rectangle = rectangleMapObject.getRectangle();
             coins.add(new LargeCoin(this, coins, largeCoinsLayer, rectangle));
         }
+    }
+
+    private void playSiren(boolean fast) {
+        if (!fast)
+            siren = Gdx.audio.newMusic(Gdx.files.internal("sounds/siren.mp3"));
+        else
+            siren = Gdx.audio.newMusic(Gdx.files.internal("sounds/fast_siren.mp3"));
+        siren.setLooping(true);
+        siren.play();
+    }
+
+    private void stopSiren() {
+        siren.setLooping(false);
+        siren.stop();
+        siren.dispose();
     }
 
     private boolean wakaIndex;

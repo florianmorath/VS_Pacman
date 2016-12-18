@@ -160,6 +160,5 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
                 listView.setAdapter(arrayAdapter);
             }
         });
-
     }
 }

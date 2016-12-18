@@ -76,7 +76,7 @@ public class Round extends Stage {
     }
 
     private float largeCoinCountdown;
-    private int exponent;
+    private int multiplier;
 
     public Round(Game game, int roundNumber, Viewport viewport, Array<Player> players, boolean playStartSound) {
         super(viewport);
@@ -173,7 +173,7 @@ public class Round extends Stage {
     public void onLargeCoinCollected() {
         setGhostsVulnerability(true);
         largeCoinCountdown = LARGE_COIN_DURATION;
-        exponent = 1;
+        multiplier = 1;
         sirenSound.stop();
         fastSirenSound.play();
     }
@@ -194,7 +194,7 @@ public class Round extends Stage {
 
     public void onGhostEaten() {
         eatGhostSound.play();
-        pacMan.getPlayer().increaseScore((int) Math.pow(200, exponent++));
+        pacMan.getPlayer().increaseScore(multiplier * 200);
     }
 
     public void end(boolean pacManWon) {

@@ -57,7 +57,6 @@ class SendingQueue{
                 @Override
                 public void run() {
 
-                    //Gdx.app.log(LOGGING_TAG, "Starting queue thread.");
                     while (!stopped) {
                         Action action = null;
                         synchronized (SendingQueue.this) {
@@ -77,8 +76,8 @@ class SendingQueue{
                             try {
                                 GameCommunicator.sendAction(stream, action);
                             } catch (IOException e) {
-                                //Network error.
-                                e.printStackTrace();
+                                //Network error. stop the communication.
+                                stopped = true;
                             }
                         }
                     }

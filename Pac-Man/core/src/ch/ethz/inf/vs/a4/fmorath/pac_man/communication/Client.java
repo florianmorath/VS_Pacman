@@ -73,7 +73,6 @@ public class Client extends CommunicationEntity {
         }while(!started);
 
         if(!stopped) {
-
             startReceiveActionLoop();
             notifyStartHandlerStart();
         }
@@ -105,6 +104,11 @@ public class Client extends CommunicationEntity {
         sendingQueue.startSendingLoop();
     }
 
+    @Override
+    public boolean isStopped(){
+        return stopped;
+    }
+
     /**
      * Start thread that listens to actions sent by the server.
      * Notifies the ActionHandler when receiving such a message.
@@ -122,20 +126,23 @@ public class Client extends CommunicationEntity {
                     boolean stopped = false;
                     while(!stopped) {
                         Action action = GameCommunicator.receiveAction(dataIn);
-                        if(action.type == ActionType.DisconnectPlayer){ //received stop signal
-                            if(action.playerId == localId) {
-                                GameCommunicator.sendStopSignal(out); //This helps the server to properly shut down its threads.
+                        switch(action.type) {
+                            case StopGame:
                                 stop();
-                                notifyStopHandler();
-                            }else{
-                                notifyPlayerLeft(action.playerId);
-                            }
-                        } else {
-                            notifyHandler(action);
+                                break;
+                            case DisconnectPlayer:
+                                if (action.playerId == localId) {
+                                    stop();
+                                }
+                                break;
+                            default:
+                                notifyHandler(action);
+                                break;
                         }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //Connection to server lost. shut down.
+                    stop();
                 }
 
             }
@@ -143,11 +150,17 @@ public class Client extends CommunicationEntity {
     }
 
     @Override
-    public void stop() throws IOException {
-        if(localId > -1)
-            GameCommunicator.sendAction(out, new DisconnectPlayerAction(localId));
-        sendingQueue.stop();
+    public void stop(){
+        try {
+            if (localId > -1) {
+                    GameCommunicator.sendAction(out, new DisconnectPlayerAction(localId));
+            }
+            sendingQueue.stop();
+        }catch(IOException ex){
+            //connection already lost.
+        }
         stopped = true;
+        notifyStopHandler();
     }
 
 

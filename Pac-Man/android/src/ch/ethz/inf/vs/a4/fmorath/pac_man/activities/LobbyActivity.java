@@ -104,11 +104,7 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
             game = null;
 
             if(client != null){
-                try {
-                    client.stop();
-                }catch (IOException ex){
-                    ex.printStackTrace();
-                }
+                client.stop();
             }
             client = null;
         }

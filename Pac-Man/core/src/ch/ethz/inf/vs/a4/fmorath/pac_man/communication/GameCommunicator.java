@@ -7,6 +7,7 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.DisconnectPlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatPlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.StopGameAction;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -109,6 +110,8 @@ abstract class GameCommunicator{
                 return new EatPlayerAction(playerId, sendResponseToRequestingClient, eatenPlayerId);
             case DisconnectPlayer:
                 return new DisconnectPlayerAction(playerId);
+            case StopGame:
+                return new StopGameAction();
             default:
                 return null;
         }
@@ -123,10 +126,7 @@ abstract class GameCommunicator{
         if(stream == null){
             throw new IllegalArgumentException();
         }
-        stream.writeInt(-1);
-        stream.writeFloat(0);
-        stream.writeFloat(0);
-        stream.writeInt(0);
+        sendAction(stream, new StopGameAction());
     }
 
     /**

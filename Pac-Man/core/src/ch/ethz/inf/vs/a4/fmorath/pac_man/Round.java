@@ -198,6 +198,10 @@ public class Round extends Stage {
     }
 
     public void end(boolean pacManWon) {
+        if(game.communicator.isStopped()){
+            game.endGame();
+        }
+
         if (pacManWon) {
             sirenSound.stop();
             fastSirenSound.stop();

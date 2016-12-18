@@ -41,6 +41,10 @@ public class Server extends CommunicationEntity{
         this.sendingQueues = new ArrayList<SendingQueue>();
     }
 
+    @Override
+    public boolean isStopped() {
+        return gameStopped;
+    }
 
     /**
      * Asynchronously start server: Start a new Thread that waits for the clients to connect, until the "gameStarted" flag is set.
@@ -72,19 +76,21 @@ public class Server extends CommunicationEntity{
      */
     public void stop(){
         for(SendingQueue queue: sendingQueues){
-            queue.stop();
+            if(queue != null)
+                queue.stop();
         }
         for(Socket s: clients){
-            try {
-                if(!gameStarted){
-                    GameCommunicator.sendPlayerDisconnected(new DataOutputStream(s.getOutputStream()), 0);
+            if(s != null) {
+                try {
+                    if (!gameStarted) {
+                        GameCommunicator.sendPlayerDisconnected(new DataOutputStream(s.getOutputStream()), 0);
+                    } else {
+                        GameCommunicator.sendStopSignal(new DataOutputStream(s.getOutputStream()));
+                    }
+                    notifyStopHandler();
+                } catch (IOException e) {
+                    e.printStackTrace(); //Todo: add proper exception handling.
                 }
-                else {
-                    GameCommunicator.sendStopSignal(new DataOutputStream(s.getOutputStream()));
-                }
-                notifyStopHandler();
-            } catch (IOException e) {
-                e.printStackTrace(); //Todo: add proper exception handling.
             }
         }
         gameStarted = true;
@@ -176,7 +182,9 @@ public class Server extends CommunicationEntity{
                             GameCommunicator.sendPlayerNameAndId(out, playerNames.get(i), i);
                         }
                         for(Socket c: clients){
-                            GameCommunicator.sendPlayerNameAndId(new DataOutputStream(c.getOutputStream()), newName, newId);
+                            if(c != null) {
+                                GameCommunicator.sendPlayerNameAndId(new DataOutputStream(c.getOutputStream()), newName, newId);
+                            }
                         }
                         playerNames.add(newName);
                     }
@@ -229,26 +237,32 @@ public class Server extends CommunicationEntity{
 
     private void onPlayerDisconnected(int id) {
         if (!gameStopped) {
-            Socket socket;
-            synchronized (this) {
-                socket = clients.remove(id - 1);
-                playerNames.remove(id);
-                for (int i = 0; i < clients.size(); ++i) {
-                    try {
-                        GameCommunicator.sendPlayerDisconnected(new DataOutputStream(clients.get(i).getOutputStream()), id);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+            if(!gameStarted){
+                Socket socket;
+                synchronized (this) {
+                    socket = clients.remove(id - 1);
+                    playerNames.remove(id);
+                    for (int i = 0; i < clients.size(); ++i) {
+                        try {
+                            GameCommunicator.sendPlayerDisconnected(new DataOutputStream(clients.get(i).getOutputStream()), id);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
-            }
-            try {
-                GameCommunicator.sendStartSignal(new DataOutputStream(socket.getOutputStream()));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+                try {
+                    GameCommunicator.sendStartSignal(new DataOutputStream(socket.getOutputStream()));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                notifyPlayerLeft(id);
 
-
-            notifyPlayerLeft(id);
+            }else{
+                int arrId = id -1;
+                sendingQueues.get(arrId).stop();
+                clients.set(arrId, null);
+                sendingQueues.set(arrId, null);
+            }
         }
     }
 
@@ -259,8 +273,12 @@ public class Server extends CommunicationEntity{
      */
     private void sendActionToClients(Action action) throws IOException {
         for (int i = 0; i < sendingQueues.size(); i++) {
-            if (i + 1 != action.playerId || action.sendResponseToRequestingClient)
-                sendingQueues.get(i).send(action);
+            if (i + 1 != action.playerId || action.sendResponseToRequestingClient) {
+                SendingQueue queue = sendingQueues.get(i);
+                if(queue != null) {
+                    sendingQueues.get(i).send(action);
+                }
+            }
         }
     }
 
@@ -283,7 +301,9 @@ public class Server extends CommunicationEntity{
     private void sendStartSignalToAllClients() throws IOException {
         for(int i=0; i < clients.size(); ++i){
             Socket s = clients.get(i);
-            GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()));
+            if(s != null) {
+                GameCommunicator.sendStartSignal(new DataOutputStream(s.getOutputStream()));
+            }
         }
     }
 

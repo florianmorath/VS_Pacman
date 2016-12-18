@@ -12,6 +12,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 
+import java.io.IOException;
+
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatCoinAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.EatPlayerAction;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
@@ -19,15 +21,20 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.CommunicationEntity;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.ActionHandler;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.Server;
+import ch.ethz.inf.vs.a4.fmorath.pac_man.communication.StopSignalHandler;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Figure;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.Ghost;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.figures.PacMan;
 
 
-public class Game extends ApplicationAdapter implements ActionHandler {
+public class Game extends ApplicationAdapter implements ActionHandler, StopSignalHandler{
 
 	public CommunicationEntity communicator;
 	public void setCommunicator(CommunicationEntity communicator){
+		if(communicator != null){
+			communicator.setPlayerActionHandler(this);
+			communicator.setStopSignalHandler(this);
+		}
 		this.communicator = communicator;
 	}
 	public boolean isServer(){
@@ -111,6 +118,13 @@ public class Game extends ApplicationAdapter implements ActionHandler {
 
 	@Override
 	public void dispose() {
+		if(communicator != null) {
+			try {
+				communicator.stop();
+			} catch (IOException ex) {
+				//do nothing, connection already lost.
+			}
+		}
 		currentRound.dispose();
 		map.dispose();
 	}
@@ -127,7 +141,7 @@ public class Game extends ApplicationAdapter implements ActionHandler {
 
 	public void endRound() {
 		if (roundNumber == getNumPlayers())
-            hasEnded = true;
+            endGame();
         else {
             currentRound.dispose();
 			Gdx.app.postRunnable(new Runnable() {
@@ -137,6 +151,10 @@ public class Game extends ApplicationAdapter implements ActionHandler {
 				}
 			});
         }
+	}
+
+	public void endGame(){
+		hasEnded = true;
 	}
 
 	@Override
@@ -159,5 +177,10 @@ public class Game extends ApplicationAdapter implements ActionHandler {
                     ((Ghost) figure).onEaten();
                 break;
         }
+	}
+
+	@Override
+	public void receivedStopSignal() {
+		endGame();
 	}
 }

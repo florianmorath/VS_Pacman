@@ -6,7 +6,7 @@ package ch.ethz.inf.vs.a4.fmorath.pac_man.actions;
 
 public enum ActionType {
 
-    Movement(0), EatCoin(1), EatPlayer(2), DisconnectPlayer(3);
+    Movement(0), EatCoin(1), EatPlayer(2), DisconnectPlayer(3), StopGame(4);
 
     private final int value;
 

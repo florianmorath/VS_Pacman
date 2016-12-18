@@ -60,7 +60,8 @@ abstract public class CommunicationEntity {
      * @param action The action received from the network.
      */
     protected void notifyHandler(Action action){
-        this.actionHandler.handleAction(action);
+        if(actionHandler != null)
+            this.actionHandler.handleAction(action);
     }
 
     /**
@@ -90,4 +91,6 @@ abstract public class CommunicationEntity {
     public abstract void send(Action action) throws IOException;
 
     public abstract void stop() throws  IOException;
+
+    public abstract boolean isStopped();
 }

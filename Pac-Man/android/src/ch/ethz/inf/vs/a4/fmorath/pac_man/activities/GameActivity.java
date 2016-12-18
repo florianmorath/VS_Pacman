@@ -9,11 +9,12 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 
 public class GameActivity extends AndroidApplication {
+	private Game game;
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		final Game game = Game.getInstance();
+		game = Game.getInstance();
 		initialize(game, config);
 
 		final Intent intent = new Intent(this, ScoreActivity.class);
@@ -36,6 +37,7 @@ public class GameActivity extends AndroidApplication {
 	public void onBackPressed() {
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
+		game.dispose();
 		// TODO: Disconnect client from server / stop server
 	}
 }

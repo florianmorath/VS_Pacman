@@ -71,6 +71,8 @@ public class Game extends ApplicationAdapter implements ActionHandler, StopSigna
 		players = new Array<Player>();
 	}
 
+    public static final int MAX_PLAYERS = 5;
+
     private int roundNumber = 0;
     private Round currentRound;
     private boolean hasEnded = false;

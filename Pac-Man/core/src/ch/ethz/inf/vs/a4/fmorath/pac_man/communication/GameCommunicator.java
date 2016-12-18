@@ -52,7 +52,7 @@ abstract class GameCommunicator{
      * @throws IOException
      */
     public static void sendAction(DataOutputStream stream, Action action) throws IOException {
-        if(stream == null || action.playerId < 0){
+        if(stream == null){
             throw new IllegalArgumentException();
         }
 

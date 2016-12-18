@@ -38,6 +38,5 @@ public class GameActivity extends AndroidApplication {
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		game.dispose();
-		// TODO: Disconnect client from server / stop server
 	}
 }

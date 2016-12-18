@@ -9,6 +9,7 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.fmorath.pac_man.Game;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.MovementDirection;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.Action;
 import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.ActionType;
@@ -90,7 +91,7 @@ public class Server extends CommunicationEntity{
                     }
                     notifyStopHandler();
                 } catch (IOException e) {
-                    e.printStackTrace(); //Todo: add proper exception handling.
+                    e.printStackTrace();
                 }
             }
         }
@@ -133,7 +134,7 @@ public class Server extends CommunicationEntity{
             sendStartSignalToAllClients();
             notifyStartHandlerStart();
         } catch (IOException e) {
-            e.printStackTrace(); //Todo: add proper exception handling.
+            e.printStackTrace();
         }
     }
 
@@ -153,10 +154,15 @@ public class Server extends CommunicationEntity{
         // Loop until game starts.
         while(!gameStarted){
             try {
-                if(clients.size() < MAX_PLAYER-1) {
-                    Socket socket = serverSocket.accept();
+                Socket socket = serverSocket.accept();
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                if (Game.getInstance().getNumPlayers() < Game.MAX_PLAYERS) {
+                    GameCommunicator.sendAction(out, new DisconnectPlayerAction(-2));
                     clients.add(socket);
                     getAndDistributeNewClientsName(socket);
+                } else {
+                    GameCommunicator.sendAction(out, new DisconnectPlayerAction(-1));
+                    socket.close();
                 }
             }catch (SocketTimeoutException ex){
                 //do nothing because the timeout is expected.

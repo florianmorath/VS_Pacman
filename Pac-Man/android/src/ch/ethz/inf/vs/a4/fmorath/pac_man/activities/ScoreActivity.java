@@ -54,6 +54,5 @@ public class ScoreActivity extends Activity {
     public void onBackPressed() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
-        // TODO: Disconnect client from server / stop server
     }
 }

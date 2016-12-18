@@ -27,10 +27,12 @@ public class Client extends CommunicationEntity {
     private String myName;
     private boolean stopped = false;
 
+    public boolean connectionRefused;
+
     /**
      * Constructor.
      */
-    public Client(int port, String myName){
+    public Client(int port, String myName) {
         super(port);
         this.socket = null;
         this.sendingQueue = null;
@@ -45,7 +47,7 @@ public class Client extends CommunicationEntity {
      * @param serverAddress Ip-Address or hostname of the server.
      * @throws IOException
      */
-    public void connectAndStartGame(String serverAddress) throws IOException {
+    public void connectAndStartGame(String serverAddress) throws IOException, IndexOutOfBoundsException {
         connectToServer(serverAddress);
         GameCommunicator.sendPlayerName(out, myName);
         boolean started;
@@ -95,11 +97,15 @@ public class Client extends CommunicationEntity {
      * Then create and start the sending queue thread.
      * @param serverAddress Ip-Address or hostname of the server.
      */
-    private void connectToServer(String serverAddress) throws IOException {
+    private void connectToServer(String serverAddress) throws IOException, IndexOutOfBoundsException {
         int port = getPort();
         socket = new Socket(serverAddress, port);
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
+        Action action = GameCommunicator.receiveAction(in);
+        if (action.type == ActionType.DisconnectPlayer)
+            if (action.playerId == -1)
+                throw new IndexOutOfBoundsException();
         sendingQueue = new SendingQueue(out);
         sendingQueue.startSendingLoop();
     }
@@ -132,6 +138,9 @@ public class Client extends CommunicationEntity {
                                 break;
                             case DisconnectPlayer:
                                 if (action.playerId == localId) {
+                                    stop();
+                                } else if (action.playerId == -1) {
+                                    connectionRefused = true;
                                     stop();
                                 }
                                 break;

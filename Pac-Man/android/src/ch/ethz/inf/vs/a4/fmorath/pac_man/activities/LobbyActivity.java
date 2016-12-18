@@ -66,25 +66,23 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
             client = new Client(Integer.parseInt(portString), prefs.getString("username","Jim"));
             client.setStartSignalHandler(this);
             game.setCommunicator(client);
-                new Thread(new Runnable(){
+            new Thread(new Runnable(){
 
-                    @Override
-                    public void run() {
-
-                        try {
-                            client.connectAndStartGame(prefs.getString("join_ip_address", "127.0.0.1"));
-                        } catch (IOException e) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    TextView text = (TextView) findViewById(R.id.text_waiting_for_host);
-                                    text.setText("Unable to connect to server.");
-                                }
-                            });
-                        }
-
+                @Override
+                public void run() {
+                    try {
+                        client.connectAndStartGame(prefs.getString("join_ip_address", "127.0.0.1"));
+                    } catch (final Exception e) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                TextView text = (TextView) findViewById(R.id.text_waiting_for_host);
+                                text.setText(e instanceof IOException ? "Unable to connect to server." : "No more room for more players.");
+                            }
+                        });
                     }
-                }).start();
+                }
+            }).start();
         }
     }
 

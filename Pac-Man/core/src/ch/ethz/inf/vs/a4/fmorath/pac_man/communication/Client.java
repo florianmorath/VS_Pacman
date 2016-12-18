@@ -155,7 +155,9 @@ public class Client extends CommunicationEntity {
             if (localId > -1) {
                     GameCommunicator.sendAction(out, new DisconnectPlayerAction(localId));
             }
-            sendingQueue.stop();
+            if(sendingQueue != null) {
+                sendingQueue.stop();
+            }
         }catch(IOException ex){
             //connection already lost.
         }

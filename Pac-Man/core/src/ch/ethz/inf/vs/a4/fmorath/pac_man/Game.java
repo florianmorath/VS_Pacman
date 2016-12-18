@@ -118,13 +118,18 @@ public class Game extends ApplicationAdapter implements ActionHandler, StopSigna
 
 	@Override
 	public void dispose() {
-		if(communicator != null) {
-			try {
-				communicator.stop();
-			} catch (IOException ex) {
-				//do nothing, connection already lost.
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if(communicator != null) {
+					try {
+						communicator.stop();
+					} catch (IOException ex) {
+						//do nothing, connection already lost.
+					}
+				}
 			}
-		}
+		}).start();
 		currentRound.dispose();
 		map.dispose();
 	}

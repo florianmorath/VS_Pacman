@@ -50,7 +50,6 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
         super.onResume();
 
         started = false;
-        cleanUp();
         game = new Game();
 
         boolean isHost = getIntent().getBooleanExtra(MainActivity.IS_HOST, false);
@@ -92,22 +91,23 @@ public class LobbyActivity extends Activity implements StartSignalHandler  {
     @Override
     protected void onStop() {
         super.onStop();
-        cleanUp();
-    }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(!started) {
+                    if(server != null) {
+                        server.stop();
+                        server = null;
+                    }
+                    game = null;
 
-    private void cleanUp(){
-        if(!started) {
-            if(server != null) {
-                server.stop();
-                server = null;
+                    if(client != null){
+                        client.stop();
+                    }
+                    client = null;
+                }
             }
-            game = null;
-
-            if(client != null){
-                client.stop();
-            }
-            client = null;
-        }
+        }).start();
     }
 
     public void onStartButtonClick(View view) {

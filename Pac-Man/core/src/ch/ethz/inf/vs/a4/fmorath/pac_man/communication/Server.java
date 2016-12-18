@@ -22,6 +22,7 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.DisconnectPlayerAction;
  * Server for the Pac Man game communication protocol.
  */
 public class Server extends CommunicationEntity{
+    private static final int MAX_PLAYER = 5;
     private final List<Socket> clients;
     private final List<String> playerNames;
     private final List<SendingQueue> sendingQueues;
@@ -152,9 +153,11 @@ public class Server extends CommunicationEntity{
         // Loop until game starts.
         while(!gameStarted){
             try {
-                Socket socket = serverSocket.accept();
-                clients.add(socket);
-                getAndDistributeNewClientsName(socket);
+                if(clients.size() < MAX_PLAYER-1) {
+                    Socket socket = serverSocket.accept();
+                    clients.add(socket);
+                    getAndDistributeNewClientsName(socket);
+                }
             }catch (SocketTimeoutException ex){
                 //do nothing because the timeout is expected.
             }catch(IOException ex){

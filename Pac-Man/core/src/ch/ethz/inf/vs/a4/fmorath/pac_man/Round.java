@@ -148,7 +148,7 @@ public class Round extends Stage {
         batch.begin();
 
         font.draw(batch, "SCORE",                                               4,   271, 0, Align.left,   false);
-        font.draw(batch, Integer.toString(players.get(roundNumber).getScore()), 4,   262, 0, Align.left,   false);
+        font.draw(batch, Integer.toString(pacMan.getPlayer().getScore()), 4,   262, 0, Align.left,   false);
 
         font.draw(batch, "HIGH SCORE",                                          113, 271, 0, Align.center, false);
         font.draw(batch, Integer.toString(game.getHighScore()),                 113, 262, 0, Align.center, false);

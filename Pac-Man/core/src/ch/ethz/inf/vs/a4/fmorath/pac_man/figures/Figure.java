@@ -25,7 +25,6 @@ import ch.ethz.inf.vs.a4.fmorath.pac_man.actions.MovementAction;
 
 public abstract class Figure extends Actor {
 
-    //private static final int CORNER_THRESHOLD = 2; // TODO: Set to getSpeed() * delta;
     protected static final float FRAME_DURATION = 0.05f;
     private static final float SPEED = 16 * 4.5f; // 11 tiles per second in original pacman. 2 tiles = 2 world units. (4.5f)
     protected float getSpeed() {
